@@ -1,0 +1,30 @@
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+
+export interface IUser extends mongoose.Document {
+  email: string;
+  password: string;
+  name: string;
+  tokenversion: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const userSchema = new mongoose.Schema<IUser>(
+  {
+    email: { type: String, required: true, unique: true, index: true },
+    password: { type: String, required: true, minlength: 6 },
+    name: { type: String, required: true, trim: true },
+    tokenversion: { type: Number, default: 0 },
+  },
+  {
+    timestamps: true,
+  },
+);
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+
+  this.password = await bcrypt.hash(this.password, 10);
+});
+
+export default mongoose.model<IUser>("User", userSchema);

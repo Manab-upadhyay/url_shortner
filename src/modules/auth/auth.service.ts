@@ -1,0 +1,59 @@
+import User from "./auth.model";
+import bcrypt from "bcrypt";
+import { generateToken } from "../../utils/jwt.utils";
+
+async function comparePassword(this: any, password: string) {
+  return await bcrypt.compare(password, this.password);
+}
+async function signup(email: string, password: string, name: string) {
+  try {
+    const exitingUser = await User.findOne({ email });
+
+    if (exitingUser) {
+      throw new Error("User already exists");
+    }
+    const user = new User({ email, password, name });
+    await user.save();
+    const token = generateToken(user._id.toString(), user.tokenversion);
+
+    return { user, token };
+  } catch (err) {
+    throw err;
+  }
+}
+async function login(email: string, password: string) {
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("Invalid email or password");
+    }
+    const isMatch = await comparePassword.call(user, password);
+    if (!isMatch) {
+      throw new Error("Invalid email or password");
+    }
+    const token = generateToken(user._id.toString(), user.tokenversion);
+    return { user, token };
+  } catch (err) {
+    throw err;
+  }
+}
+async function logout(userId: string) {
+  console.log("Logout called for userId:", userId);
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  user.tokenversion += 1;
+  await user.save();
+}
+async function getUserById(userId: string) {
+  const user = await User.findById(userId).select("-password");
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return user;
+}
+
+export { signup, login, logout, getUserById };
