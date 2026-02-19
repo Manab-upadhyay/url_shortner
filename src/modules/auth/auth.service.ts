@@ -6,36 +6,28 @@ async function comparePassword(this: any, password: string) {
   return await bcrypt.compare(password, this.password);
 }
 async function signup(email: string, password: string, name: string) {
-  try {
-    const exitingUser = await User.findOne({ email });
+  const exitingUser = await User.findOne({ email });
 
-    if (exitingUser) {
-      throw new Error("User already exists");
-    }
-    const user = new User({ email, password, name });
-    await user.save();
-    const token = generateToken(user._id.toString(), user.tokenversion);
-
-    return { user, token };
-  } catch (err) {
-    throw err;
+  if (exitingUser) {
+    throw new Error("User already exists");
   }
+  const user = new User({ email, password, name });
+  await user.save();
+  const token = generateToken(user._id.toString(), user.tokenversion);
+
+  return { user, token };
 }
 async function login(email: string, password: string) {
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      throw new Error("Invalid email or password");
-    }
-    const isMatch = await comparePassword.call(user, password);
-    if (!isMatch) {
-      throw new Error("Invalid email or password");
-    }
-    const token = generateToken(user._id.toString(), user.tokenversion);
-    return { user, token };
-  } catch (err) {
-    throw err;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error("Invalid email or password");
   }
+  const isMatch = await comparePassword.call(user, password);
+  if (!isMatch) {
+    throw new Error("Invalid email or password");
+  }
+  const token = generateToken(user._id.toString(), user.tokenversion);
+  return { user, token };
 }
 async function logout(userId: string) {
   console.log("Logout called for userId:", userId);
