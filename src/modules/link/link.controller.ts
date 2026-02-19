@@ -5,7 +5,7 @@ import {
   updateLink,
   deleteLink,
 } from "./link.service";
-import { asyncHandler } from "../../utils/asynchanddler";
+import { asyncHandler } from "../../utils/asynchandler";
 import { ApiError } from "../../utils/ApiError";
 export const addLinkController = asyncHandler(async (req: any, res: any) => {
   const { url, name, expiresAt } = req.body;

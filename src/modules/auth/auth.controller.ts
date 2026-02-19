@@ -1,6 +1,6 @@
 import { login, signup, logout, getUserById } from "./auth.service";
-import { ApiError } from "../../utils/ApiError";
-import { asyncHandler } from "../../utils/asynchanddler";
+
+import { asyncHandler } from "../../utils/asynchandler";
 
 const signupController = asyncHandler(async (req: any, res: any) => {
   const { email, password, name } = req.body;
