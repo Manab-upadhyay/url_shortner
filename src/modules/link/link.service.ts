@@ -1,19 +1,28 @@
 import Link from "./link.model";
 import generateShortCode from "../../utils/generateShortcode";
+import { ApiError } from "../../utils/ApiError";
 async function addLink(
   link: string,
   name: string,
   userId: string,
   expiresAt?: Date,
+  customAlias?: String,
 ) {
   try {
-    let shortCode;
-    let existsingLink;
-    do {
-      shortCode = generateShortCode();
-      existsingLink = await Link.findOne({ shortCode });
-    } while (existsingLink);
-
+    let shortCode: String;
+    if (customAlias) {
+      let checkIsAliasTaken = await Link.findOne({ shortCode: customAlias });
+      if (checkIsAliasTaken) {
+        throw new ApiError(400, "Alias is already taken");
+      }
+      shortCode = customAlias;
+    } else {
+      let existsingLink;
+      do {
+        shortCode = generateShortCode();
+        existsingLink = await Link.findOne({ shortCode });
+      } while (existsingLink);
+    }
     const newLink = new Link({
       url: link,
       name,
