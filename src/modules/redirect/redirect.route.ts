@@ -1,6 +1,6 @@
 import { redirectController } from "./redirect.controller";
 import { Router } from "express";
-import { protect } from "../../middleware/auth.middleware";
+
 const router = Router();
-router.get("/:shortCode", protect, redirectController);
+router.get("/:shortCode", redirectController);
 export default router;
