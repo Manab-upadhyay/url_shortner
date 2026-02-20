@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "worker": "ts-node src/queue/analytics.worker.ts"
+    "worker": "ts-node src/queue/worker.queue.ts"
   },
   "author": "Manab",
   "license": "ISC",
