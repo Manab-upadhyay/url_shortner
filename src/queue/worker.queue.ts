@@ -1,29 +1,34 @@
 import { Worker } from "bullmq";
-import { redisConnection } from "../config/redis.config";\
+import { redis } from "../config/redis.config";
 import countModel from "../modules/count/count.model";
-
+import Link from "../modules/link/link.model";
 
 const worker = new Worker(
   "analyticsQueue",
   async (job) => {
     const { linkId, ip, userAgent } = job.data;
 
-    
-    const getLocation = await fetch (`https://api.ipapi.com/api/${ip}?access_key=${process.env.IP_API_KEY}`)
-    const data = await getLocation.json()
-    const userLocation = {regionName: data.region_name, countryName: data.country_name, city : data.city}
+    const getLocation = await fetch(
+      `https://api.ipapi.com/api/${ip}?access_key=${process.env.IP_API_KEY}`,
+    );
+    const data = await getLocation.json();
+    const userLocation = {
+      regionName: data.region_name,
+      countryName: data.country_name,
+      city: data.city,
+    };
 
-
+    await Link.updateOne({ _id: linkId }, { $inc: { clicks: 1 } });
     await countModel.create({
       linkId,
       ip,
       userAgent,
-      location: userLocation
+      location: userLocation,
     });
   },
   {
-    connection: redisConnection,
-  }
+    connection: redis,
+  },
 );
 
 worker.on("completed", (job) => {
