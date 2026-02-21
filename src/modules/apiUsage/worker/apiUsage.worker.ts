@@ -1,4 +1,4 @@
-import ApiRouteUsage from ".././uagae.model";
+import ApiRouteUsage from "../apiuagae.model";
 import { redis } from "../../../config/cache.redis";
 import cron from "node-cron";
 export const startApiUsageWorker = () => {
