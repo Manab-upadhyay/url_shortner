@@ -11,7 +11,10 @@ async function addLink(
   try {
     let shortCode: String;
     if (customAlias) {
-      let checkIsAliasTaken = await Link.findOne({ shortCode: customAlias });
+      let checkIsAliasTaken = await Link.findOne({
+        shortCode: customAlias,
+        isActive: true,
+      });
       if (checkIsAliasTaken) {
         throw new ApiError(400, "Alias is already taken");
       }
@@ -37,7 +40,7 @@ async function addLink(
   }
 }
 async function getLink(shortCode: string) {
-  const link = await Link.findOne({ shortCode });
+  const link = await Link.findOne({ shortCode, isActive: true });
   if (!link) {
     throw new Error("Link not found");
   }
@@ -48,7 +51,7 @@ async function getUserLinks(
   page: number = 1,
   limit: number = 10,
 ) {
-  const links = await Link.find({ userId })
+  const links = await Link.find({ userId, isActive: false })
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
@@ -58,7 +61,10 @@ async function getUserLinks(
   return links;
 }
 async function deleteLink(linkId: string, userId: string) {
-  const deletedLink = await Link.findOneAndDelete({ _id: linkId, userId });
+  const deletedLink = await Link.findOneAndUpdate(
+    { _id: linkId },
+    { $set: { isActive: false } },
+  );
   if (!deletedLink) {
     throw new Error("Link not found or unauthorized");
   }
