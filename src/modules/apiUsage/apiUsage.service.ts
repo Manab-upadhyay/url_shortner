@@ -1,5 +1,5 @@
 import { redis } from "../../config/cache.redis";
-import ApirouteUsage from "./apiuagae.model";
+import ApirouteUsage from "./apiUsage.model";
 
 export const incrementApiUsage = async (
   userId: string,
