@@ -6,6 +6,7 @@ export interface IUser extends mongoose.Document {
   password: string;
   name: string;
   tokenversion: number;
+  plan: { enum: string[] };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,6 +17,11 @@ const userSchema = new mongoose.Schema<IUser>(
     password: { type: String, required: true, minlength: 6 },
     name: { type: String, required: true, trim: true },
     tokenversion: { type: Number, default: 0 },
+    plan: {
+      type: String,
+      enum: ["free", "pro"],
+      default: "free",
+    },
   },
   {
     timestamps: true,

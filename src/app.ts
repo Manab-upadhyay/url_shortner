@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./modules/auth/auth.route";
 import linkRoutes from "./modules/link/link.route";
 import redirectRoutes from "./modules/redirect/redirect.route";
+import develorsRoutes from "./modules/link/link.dev.route";
 import analyticsRoutes from "./modules/analytics/analytics.route";
 import errorMiddleware from "./middleware/error.middleware";
 import { authRateLimiter } from "./middleware/rateLimiter.middleware";
@@ -41,6 +42,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRateLimiter, authRoutes);
 app.use("/api/link", apiRateLimiter, linkRoutes);
+app.use("/v1/link", apiRateLimiter, develorsRoutes);
 app.use("/", apiRateLimiter, redirectRoutes);
 app.use("/api/analytics", apiRateLimiter, analyticsRoutes);
 app.use(errorMiddleware); // Global error handler (LAST)

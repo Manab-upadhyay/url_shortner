@@ -1,0 +1,30 @@
+import { redis } from "../../config/cache.redis";
+import ApirouteUsage from "./uagae.model";
+
+export const incrementApiUsage = async (
+  userId: string,
+  apiKeyId: string,
+  endpoint: string,
+) => {
+  const now = new Date();
+  const date = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  const hour = now.getHours();
+
+  const baseKey = `apiUsage:${userId}:${apiKeyId}:${date}:${hour}`;
+
+  await redis.incr(`${baseKey}:total`);
+  await redis.incr(`${baseKey}:endpoint:${endpoint}`);
+
+  await redis.expire(`${baseKey}:total`, 7200);
+};
+
+export const getApiUsageByDate = async (
+  userId: string,
+  startDate: string,
+  endDate: string,
+) => {
+  return ApirouteUsage.find({
+    userId,
+    date: { $gte: startDate, $lte: endDate },
+  }).sort({ date: 1, hour: 1 });
+};
