@@ -1,7 +1,7 @@
 import { validateApiKey } from "../modules/apiKey/apiKey.service";
 import { asyncHandler } from "../utils/asynchandler";
 import { ApiError } from "../utils/ApiError";
-import { incrementApiUsage } from "../modules/apiUsage/apiusage.service";
+import { incrementApiUsage } from "../modules/apiUsage/apiUsage.service";
 export const apiKeyAuth = asyncHandler(async (req: any, next: any) => {
   const authHeader = req.headers.authorization;
 

@@ -18,13 +18,8 @@ export const incrementApiUsage = async (
   await redis.expire(`${baseKey}:total`, 7200);
 };
 
-export const getApiUsageByDate = async (
-  userId: string,
-  startDate: string,
-  endDate: string,
-) => {
+export const getApiUsage = async (userId: string) => {
   return ApirouteUsage.find({
     userId,
-    date: { $gte: startDate, $lte: endDate },
-  }).sort({ date: 1, hour: 1 });
+  });
 };

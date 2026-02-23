@@ -11,8 +11,15 @@ import {
   createLinkSchema,
   redirectSchema,
 } from "../../validator/link.validator";
+import { checkApiLimit } from "../../middleware/usage.middleware";
 const router = Router();
-router.post("/addLink", protect, validate(createLinkSchema), addLinkController);
+router.post(
+  "/addLink",
+  protect,
+  validate(createLinkSchema),
+  checkApiLimit,
+  addLinkController,
+);
 router.get(
   "/getLink/:shortCode",
   protect,
@@ -21,4 +28,5 @@ router.get(
 );
 router.get("/getUserLinks", protect, getUserLinksController);
 router.delete("/deleteLink/:linkId", protect, deleteLinkController);
+
 export default router;

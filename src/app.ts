@@ -9,6 +9,7 @@ import linkRoutes from "./modules/link/link.route";
 import redirectRoutes from "./modules/redirect/redirect.route";
 import develorsRoutes from "./modules/link/link.dev.route";
 import analyticsRoutes from "./modules/analytics/analytics.route";
+import getApiUsageRoute from "./modules/apiUsage/apiUsage.route";
 import errorMiddleware from "./middleware/error.middleware";
 import { authRateLimiter } from "./middleware/rateLimiter.middleware";
 import { apiRateLimiter } from "./middleware/rateLimiter.middleware";
@@ -45,6 +46,7 @@ app.use("/api/link", apiRateLimiter, linkRoutes);
 app.use("/v1/link", apiRateLimiter, develorsRoutes);
 app.use("/", apiRateLimiter, redirectRoutes);
 app.use("/api/analytics", apiRateLimiter, analyticsRoutes);
+app.use("/api/getApiUsage", apiRateLimiter, getApiUsageRoute);
 app.use(errorMiddleware); // Global error handler (LAST)
 
 /* =======================

@@ -10,14 +10,24 @@ import {
   createLinkSchema,
   redirectSchema,
 } from "../../validator/link.validator";
+import {
+  checkApiLimit,
+  checkLinkLimit,
+} from "../../middleware/usage.middleware";
 
 const router = Router();
 
 // All routes here require API key
 router.use(apiKeyAuth);
+router.use(checkApiLimit);
 
 // Create link via API
-router.post("/links", validate(createLinkSchema), addLinkController);
+router.post(
+  "/links",
+  validate(createLinkSchema),
+  checkLinkLimit,
+  addLinkController,
+);
 
 // Get link info
 router.get("/links/:shortCode", validate(redirectSchema), getLinkController);

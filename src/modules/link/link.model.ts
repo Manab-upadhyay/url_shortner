@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { boolean } from "zod";
 export interface ILink extends mongoose.Document {
   url: string;
   name: string;
@@ -6,6 +7,7 @@ export interface ILink extends mongoose.Document {
   shortCode: string;
   clicks: number;
   expiresAt?: Date;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +41,10 @@ const linkSchema = new mongoose.Schema<ILink>(
     },
     expiresAt: {
       type: Date,
+    },
+    isActive: {
+      type: Boolean,
+      default: false,
     },
   },
   {

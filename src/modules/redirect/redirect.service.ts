@@ -1,9 +1,9 @@
 import Link from "../link/link.model";
 import { analyticsQueue } from "../../queue/analytics.queue";
-import { cacheRedis } from "../../config/cache.redis";
+import { redis } from "../../config/cache.redis";
 
 async function redirect(shortCode: string, ip: string, userAgent?: string) {
-  const cachedUrl = await cacheRedis.get(`short:${shortCode}`);
+  const cachedUrl = await redis.get(`short:${shortCode}`);
   if (cachedUrl) {
     const parsed = JSON.parse(cachedUrl);
     console.log("returning from redis");
@@ -26,7 +26,7 @@ async function redirect(shortCode: string, ip: string, userAgent?: string) {
   if (link.expiresAt && link.expiresAt < new Date()) {
     throw new Error("Link has expired");
   }
-  await cacheRedis.set(
+  await redis.set(
     `short:${shortCode}`,
     JSON.stringify({
       url: link.url,
