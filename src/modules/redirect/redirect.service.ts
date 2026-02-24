@@ -18,7 +18,7 @@ async function redirect(shortCode: string, ip: string, userAgent?: string) {
 
     return parsed.url;
   }
-  const link = await Link.findOne({ shortCode });
+  const link = await Link.findOne({ shortCode, isActive: true });
 
   if (!link) {
     throw new Error("Link not found");
