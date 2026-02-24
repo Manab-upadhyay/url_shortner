@@ -21,7 +21,8 @@ export const protect = async (req: any, res: any, next: any) => {
       throw new ApiError(401, "Not authenticated");
     }
 
-    req.user = user;
+    req.user = user; // optional, useful for UI
+    req.userId = user._id.toString();
     next();
   } catch (error) {
     next(error);

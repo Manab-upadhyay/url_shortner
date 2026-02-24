@@ -3,7 +3,7 @@ import {
   revokeApiKeyController,
 } from "./apikey.controller";
 import { protect } from "../../middleware/auth.middleware";
-import { apiKeyAuth } from "../../middleware/apikeyAuth.middleware";
+
 import { Router } from "express";
 const router = Router();
 
@@ -13,3 +13,4 @@ router.delete(
   protect,
   revokeApiKeyController,
 );
+export default router;

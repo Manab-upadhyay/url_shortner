@@ -44,7 +44,7 @@ const linkSchema = new mongoose.Schema<ILink>(
     },
     isActive: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {

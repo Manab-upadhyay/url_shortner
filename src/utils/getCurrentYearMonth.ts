@@ -5,4 +5,4 @@ function getCurrentMonthYear() {
     year: now.getMonth(),
   };
 }
-export default getCurrentMonthYear();
+export default getCurrentMonthYear;

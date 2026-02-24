@@ -11,9 +11,10 @@ export const startApiUsageWorker = () => {
 };
 export const flushApiUsage = async () => {
   const stream = redis.scanStream({
-    match: "apiUsage:*",
+    match: "apiUsage:*:total",
     count: 100,
   });
+
   for await (const keys of stream) {
     for (const key of keys) {
       const parts = key.split(":");
@@ -23,28 +24,29 @@ export const flushApiUsage = async () => {
       const date = parts[3];
       const hour = parseInt(parts[4]);
 
-      const totalRequests = await redis.get(`${key}:total`);
-
+      const totalRequests = await redis.get(key);
+      console.log(totalRequests);
       if (!totalRequests) continue;
+
+      const count = Number(totalRequests);
 
       await ApiRouteUsage.updateOne(
         { userId, apiKeyId, date, hour },
-        {
-          $inc: { totalRequests: Number(totalRequests) },
-        },
+        { $inc: { totalRequests: count } },
         { upsert: true },
       );
 
+      const { month, year } = getCurrentYearMonth();
+
       await overAllUsageModel.updateOne(
-        {
-          userId,
-          month: getCurrentYearMonth.month,
-          year: getCurrentYearMonth.year,
-        },
-        { $inc: { apiRequests: totalRequests } },
+        { userId, month, year },
+        { $inc: { apiRequests: count } },
+        { upsert: true },
       );
 
-      await redis.del(`${key}:total`);
+      await redis.del(key);
     }
   }
+
+  console.log("Flush completed");
 };

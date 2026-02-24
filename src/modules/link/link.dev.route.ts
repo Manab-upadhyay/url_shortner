@@ -14,16 +14,18 @@ import {
   checkApiLimit,
   checkLinkLimit,
 } from "../../middleware/usage.middleware";
+import { protect } from "../../middleware/auth.middleware";
 
 const router = Router();
 
 // All routes here require API key
+
 router.use(apiKeyAuth);
 router.use(checkApiLimit);
 
 // Create link via API
 router.post(
-  "/links",
+  "/addLinks",
   validate(createLinkSchema),
   checkLinkLimit,
   addLinkController,

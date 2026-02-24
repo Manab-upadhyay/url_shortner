@@ -7,17 +7,20 @@ import {
 } from "./link.service";
 import { asyncHandler } from "../../utils/asynchandler";
 import { ApiError } from "../../utils/ApiError";
+import { incrementLinkCreation } from "../overallUsage/overAllUsage.service";
 export const addLinkController = asyncHandler(async (req: any, res: any) => {
   const { url, name, expiresAt } = req.body;
   if (!url || !name) {
     throw new ApiError(400, "URL and name are required");
   }
-  const userId = req.user._id;
+  const userId = req.userId;
   const newLink = await addLink(url, name, userId, expiresAt);
+  await incrementLinkCreation(userId);
   res.status(201).json(newLink);
 });
 export const getLinkController = asyncHandler(async (req: any, res: any) => {
   const { shortCode } = req.params;
+  console.log(shortCode);
   if (!shortCode) {
     throw new ApiError(400, "Short code is required");
   }
@@ -26,7 +29,7 @@ export const getLinkController = asyncHandler(async (req: any, res: any) => {
 });
 export const getUserLinksController = asyncHandler(
   async (req: any, res: any) => {
-    const userId = req.user._id;
+    const userId = req.userId;
     const { page, limit } = req.query;
     if (page && isNaN(parseInt(page))) {
       throw new ApiError(400, "Page must be a number");
@@ -48,7 +51,7 @@ export const updateLinkController = asyncHandler(async (req: any, res: any) => {
   if (!linkId) {
     throw new ApiError(400, "Link ID is required");
   }
-  const userId = req.user._id;
+  const userId = req.userId;
   const { url, name, expiresAt } = req.body;
   const updatedLink = await updateLink(linkId, userId, {
     url,
@@ -62,7 +65,7 @@ export const deleteLinkController = asyncHandler(async (req: any, res: any) => {
   if (!linkId) {
     throw new ApiError(400, "Link ID is required");
   }
-  const userId = req.user._id;
+  const userId = req.userId;
   const deletedLink = await deleteLink(linkId, userId);
   res.status(200).json(deletedLink);
 });

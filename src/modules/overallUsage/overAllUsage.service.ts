@@ -1,8 +1,8 @@
 import { date } from "zod";
 import overAllUsageModel from "./overAllUsage.model";
-import getCurrentYearMonth from "../../utils/getCurrentYearMonth";
+import getCurrentMonthYear from "../../utils/getCurrentYearMonth";
 async function incrementLinkCreation(userId: string) {
-  const { month, year } = getCurrentYearMonth;
+  const { month, year } = getCurrentMonthYear();
 
   await overAllUsageModel.updateOne(
     { userId, month, year },
@@ -11,7 +11,7 @@ async function incrementLinkCreation(userId: string) {
   );
 }
 async function getCurrentUsage(userId: string) {
-  const { month, year } = getCurrentYearMonth;
+  const { month, year } = getCurrentMonthYear();
 
   return overAllUsageModel.findOne({ userId, month, year });
 }

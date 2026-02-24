@@ -7,9 +7,12 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./modules/auth/auth.route";
 import linkRoutes from "./modules/link/link.route";
 import redirectRoutes from "./modules/redirect/redirect.route";
-import develorsRoutes from "./modules/link/link.dev.route";
+import developersRoute from "./modules/link/link.dev.route";
 import analyticsRoutes from "./modules/analytics/analytics.route";
 import getApiUsageRoute from "./modules/apiUsage/apiUsage.route";
+import getOverallUsage from "./modules/overallUsage/overAllUsage.route";
+import generateApiKey from "./modules/apiKey/apiKey.route";
+import { startApiUsageWorker } from "./modules/apiUsage/worker/apiUsage.worker";
 import errorMiddleware from "./middleware/error.middleware";
 import { authRateLimiter } from "./middleware/rateLimiter.middleware";
 import { apiRateLimiter } from "./middleware/rateLimiter.middleware";
@@ -36,17 +39,24 @@ app.use(cookieParser());
 /* =======================
    ROUTES
 ======================= */
-
+startApiUsageWorker();
 app.get("/", (req, res) => {
   res.send("URL Shortener API running 🚀");
 });
-
 app.use("/api/auth", authRateLimiter, authRoutes);
-app.use("/api/link", apiRateLimiter, linkRoutes);
-app.use("/v1/link", apiRateLimiter, develorsRoutes);
-app.use("/", apiRateLimiter, redirectRoutes);
+
+// Dashboard (JWT)
+app.use("/api/links", apiRateLimiter, linkRoutes);
 app.use("/api/analytics", apiRateLimiter, analyticsRoutes);
-app.use("/api/getApiUsage", apiRateLimiter, getApiUsageRoute);
+app.use("/api/analytics", apiRateLimiter, getApiUsageRoute);
+app.use("/api/usage", apiRateLimiter, getOverallUsage);
+app.use("/api/api-keys", apiRateLimiter, generateApiKey);
+
+// Developer API (versioned)
+app.use("/api/v1/links", apiRateLimiter, developersRoute);
+
+// Public redirect
+app.use("/", apiRateLimiter, redirectRoutes);
 app.use(errorMiddleware); // Global error handler (LAST)
 
 /* =======================
