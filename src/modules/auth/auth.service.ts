@@ -1,6 +1,7 @@
 import User from "./auth.model";
 import bcrypt from "bcrypt";
 import { generateToken } from "../../utils/jwt.utils";
+import { ApiError } from "../../utils/ApiError";
 
 async function comparePassword(this: any, password: string) {
   return await bcrypt.compare(password, this.password);
@@ -11,11 +12,20 @@ async function signup(email: string, password: string, name: string) {
   if (exitingUser) {
     throw new Error("User already exists");
   }
+  if (password.length < 6) {
+    throw new ApiError(400, "Password must be at least 6 characters long");
+  }
   const user = new User({ email, password, name });
   await user.save();
   const token = generateToken(user._id.toString(), user.tokenversion);
 
-  return { user, token };
+  const safeUser = {
+    id: user._id,
+    email: user.email,
+    name: user.name,
+  };
+
+  return { user: safeUser, token };
 }
 async function login(email: string, password: string) {
   const user = await User.findOne({ email });
@@ -27,7 +37,12 @@ async function login(email: string, password: string) {
     throw new Error("Invalid email or password");
   }
   const token = generateToken(user._id.toString(), user.tokenversion);
-  return { user, token };
+  const safeUser = {
+    id: user._id,
+    email: user.email,
+    name: user.name,
+  };
+  return { user: safeUser, token };
 }
 async function logout(userId: string) {
   console.log("Logout called for userId:", userId);

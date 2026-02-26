@@ -2,9 +2,13 @@ import {
   getUserAnalytics,
   getLinkAnalytics,
   getTopLinks,
+  getClicksGroupedByHour,
+  getLinkAnalyticsPerHour,
+  getLastWeekClicks,
 } from "./analytics.service";
 import { asyncHandler } from "../../utils/asynchandler";
 import { ApiError } from "../../utils/ApiError";
+
 export const getUserAnalyticsController = asyncHandler(
   async (req: any, res: any) => {
     const userId = req.user._id;
@@ -34,9 +38,53 @@ export const getTopLinksController = asyncHandler(
     res.status(200).json(topLinks);
   },
 );
+export const getHourlyClicksController = asyncHandler(
+  async (req: any, res: any) => {
+    const userId = req.user.id;
 
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    const data = await getClicksGroupedByHour(userId, start, end);
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  },
+);
+export const getLinkAnalyticsPerHourController = asyncHandler(
+  async (req: any, res: any) => {
+    const userId = req.user.id;
+    const { linkId } = req.params;
+    if (!linkId) {
+      throw new ApiError(400, "Link ID is required");
+    }
+    const data = await getLinkAnalyticsPerHour(linkId, userId);
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  },
+);
+export const getLastWeekClicksController = asyncHandler(
+  async (req: any, res: any) => {
+    const userId = req.user._id;
+    const analytics = await getLastWeekClicks(userId);
+    res.status(200).json({
+      success: true,
+      data: analytics,
+    });
+  },
+);
 export default {
   getUserAnalyticsController,
   getLinkAnalyticsController,
   getTopLinksController,
+  getHourlyClicksController,
+  getLinkAnalyticsPerHourController,
+  getLastWeekClicksController,
 };

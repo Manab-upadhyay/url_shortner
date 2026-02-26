@@ -51,7 +51,7 @@ async function getUserLinks(
   page: number = 1,
   limit: number = 10,
 ) {
-  const links = await Link.find({ userId, isActive: false })
+  const links = await Link.find({ userId, isActive: true })
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);

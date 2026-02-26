@@ -2,7 +2,12 @@ import Link from "../link/link.model";
 import { analyticsQueue } from "../../queue/analytics.queue";
 import { redis } from "../../config/cache.redis";
 
-async function redirect(shortCode: string, ip: string, userAgent?: string) {
+async function redirect(
+  shortCode: string,
+  ip: string,
+  userAgent?: string,
+  userId?: string,
+) {
   const cachedUrl = await redis.get(`short:${shortCode}`);
   if (cachedUrl) {
     const parsed = JSON.parse(cachedUrl);
@@ -10,6 +15,7 @@ async function redirect(shortCode: string, ip: string, userAgent?: string) {
     analyticsQueue
       .add("trackClick", {
         linkId: parsed.linkId,
+        userId: userId ? userId : null,
         shortCode,
         ip,
         userAgent,

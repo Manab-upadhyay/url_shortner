@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 export interface ICount extends mongoose.Document {
   linkId: mongoose.Types.ObjectId;
   ip: string;
+  userId: mongoose.Types.ObjectId;
   location?: {
     regionName: String;
     countryName: string;
@@ -16,6 +17,7 @@ const countSchema = new mongoose.Schema<ICount>(
       required: true,
       index: true,
     },
+
     ip: {
       type: String,
       required: true,

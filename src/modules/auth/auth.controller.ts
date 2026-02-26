@@ -5,26 +5,26 @@ import { asyncHandler } from "../../utils/asynchandler";
 const signupController = asyncHandler(async (req: any, res: any) => {
   const { email, password, name } = req.body;
 
-  const { token } = await signup(email, password, name);
+  const { token, user } = await signup(email, password, name);
   res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
 
-  return res.status(201).json({ message: "User created successfully" });
+  return res.status(201).json({ message: "User created successfully", user });
 });
 const loginController = asyncHandler(async (req: any, res: any) => {
   const { email, password } = req.body;
 
-  const { token } = await login(email, password);
+  const { token, user } = await login(email, password);
   res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
 
-  return res.status(200).json("Login successful");
+  return res.status(200).json({ message: "Login successfuly", user });
 });
 const logoutController = asyncHandler(async (req: any, res: any) => {
   const userId = req.user._id;

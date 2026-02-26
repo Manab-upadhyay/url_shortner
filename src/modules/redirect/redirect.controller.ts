@@ -13,6 +13,6 @@ export const redirectController = asyncHandler(async (req: any, res: any) => {
   if (!shortCode) {
     throw new ApiError(400, "Short code is required");
   }
-  const url = await redirect(shortCode, ip, userAgent);
+  const url = await redirect(shortCode, ip, userAgent, req.userId);
   return res.redirect(url);
 });
