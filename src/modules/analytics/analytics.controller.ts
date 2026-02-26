@@ -4,7 +4,8 @@ import {
   getTopLinks,
   getClicksGroupedByHour,
   getLinkAnalyticsPerHour,
-  getLastWeekClicks,
+  getWeeklyTrend,
+  getWeeklyTrendPerLink,
 } from "./analytics.service";
 import { asyncHandler } from "../../utils/asynchandler";
 import { ApiError } from "../../utils/ApiError";
@@ -70,10 +71,23 @@ export const getLinkAnalyticsPerHourController = asyncHandler(
     });
   },
 );
-export const getLastWeekClicksController = asyncHandler(
+export const getWeeklyTrendController = asyncHandler(
   async (req: any, res: any) => {
     const userId = req.user._id;
-    const analytics = await getLastWeekClicks(userId);
+    const analytics = await getWeeklyTrend(userId);
+    res.status(200).json({
+      success: true,
+      data: analytics,
+    });
+  },
+);
+export const getWeeklyTrendPerLinkController = asyncHandler(
+  async (req: any, res: any) => {
+    const { linkId } = req.params;
+    if (!linkId) {
+      throw new ApiError(400, "Link ID is required");
+    }
+    const analytics = await getWeeklyTrendPerLink(linkId);
     res.status(200).json({
       success: true,
       data: analytics,
@@ -86,5 +100,6 @@ export default {
   getTopLinksController,
   getHourlyClicksController,
   getLinkAnalyticsPerHourController,
-  getLastWeekClicksController,
+  getWeeklyTrendController,
+  getWeeklyTrendPerLinkController,
 };

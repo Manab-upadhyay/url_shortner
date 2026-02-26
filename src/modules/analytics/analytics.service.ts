@@ -117,26 +117,103 @@ async function getTopLinks(userId: string, limit: number = 5) {
 
   return topLinks;
 }
-async function getLastWeekClicks(userId: string) {
+async function getWeeklyTrend(userId: string) {
   const now = new Date();
 
-  const startOfThisWeek = new Date(now);
-  startOfThisWeek.setDate(now.getDate() - 7);
+  const last7Start = new Date(now);
+  last7Start.setDate(now.getDate() - 7);
 
-  const startOfLastWeek = new Date(now);
-  startOfLastWeek.setDate(now.getDate() - 14);
+  const prev7Start = new Date(now);
+  prev7Start.setDate(now.getDate() - 14);
 
-  const thisWeekClicks = await countModel.countDocuments({
-    createdAt: { $gte: startOfThisWeek },
-  });
+  const userLinks = await Link.find({ userId }, { _id: 1 });
 
-  const lastWeekClicks = await countModel.countDocuments({
+  const linkIds = userLinks.map((link) => link._id);
+
+  if (linkIds.length === 0) {
+    return {
+      last7DaysClicks: 0,
+      previous7DaysClicks: 0,
+      percentage: 0,
+      isPositive: true,
+    };
+  }
+
+  const last7DaysClicks = await countModel.countDocuments({
+    linkId: { $in: linkIds },
     createdAt: {
-      $gte: startOfLastWeek,
-      $lt: startOfThisWeek,
+      $gte: last7Start,
+      $lt: now,
     },
   });
-  return lastWeekClicks;
+
+  const previous7DaysClicks = await countModel.countDocuments({
+    linkId: { $in: linkIds },
+    createdAt: {
+      $gte: prev7Start,
+      $lt: last7Start,
+    },
+  });
+
+  let percentage = 0;
+
+  if (previous7DaysClicks === 0) {
+    percentage = last7DaysClicks > 0 ? 100 : 0;
+  } else {
+    percentage =
+      ((last7DaysClicks - previous7DaysClicks) / previous7DaysClicks) * 100;
+  }
+
+  return {
+    last7DaysClicks,
+    previous7DaysClicks,
+    percentage: Math.round(percentage),
+    isPositive: percentage >= 0,
+  };
+}
+async function getWeeklyTrendPerLink(LinkId: string) {
+  const now = new Date();
+
+  const last7Start = new Date(now);
+  last7Start.setDate(now.getDate() - 7);
+
+  const prev7Start = new Date(now);
+  prev7Start.setDate(now.getDate() - 14);
+
+  // 🔥 Last 7 Days
+  const last7DaysClicks = await countModel.countDocuments({
+    linkId: LinkId,
+    createdAt: {
+      $gte: last7Start,
+      $lt: now,
+    },
+  });
+
+  // 🔥 Previous 7 Days
+  const previous7DaysClicks = await countModel.countDocuments({
+    linkId: LinkId,
+    createdAt: {
+      $gte: prev7Start,
+      $lt: last7Start,
+    },
+  });
+
+  // 🔥 Calculate Percentage
+  let percentage = 0;
+
+  if (previous7DaysClicks === 0) {
+    percentage = last7DaysClicks > 0 ? 100 : 0;
+  } else {
+    percentage =
+      ((last7DaysClicks - previous7DaysClicks) / previous7DaysClicks) * 100;
+  }
+
+  return {
+    last7DaysClicks,
+    previous7DaysClicks,
+    percentage: Math.round(percentage),
+    isPositive: percentage >= 0,
+  };
 }
 export {
   getLinkAnalytics,
@@ -144,5 +221,6 @@ export {
   getTopLinks,
   getClicksGroupedByHour,
   getLinkAnalyticsPerHour,
-  getLastWeekClicks,
+  getWeeklyTrend,
+  getWeeklyTrendPerLink,
 };
