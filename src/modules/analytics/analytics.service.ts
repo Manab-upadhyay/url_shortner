@@ -40,7 +40,7 @@ async function getLinkAnalyticsPerHour(linkId: string, userId: string) {
   return normalizeHourlyData(analytics);
 }
 async function getLinkAnalytics(linkId: string, userId: string) {
-  const link = await Link.findOne({ _id: linkId, userId });
+  const link = await Link.findOne({ _id: linkId, userId, isActive: true });
   if (!link) {
     throw new Error("Link not found or unauthorized");
   }
@@ -215,6 +215,21 @@ async function getWeeklyTrendPerLink(LinkId: string) {
     isPositive: percentage >= 0,
   };
 }
+async function getPerLinkDashboard(linkId: string, userId: string) {
+  //calls all analytics for a specific link to show in dashboard
+  const [summary, hourly, weeklyTrend] = await Promise.all([
+    getLinkAnalytics(linkId, userId),
+    getLinkAnalyticsPerHour(linkId, userId),
+    getWeeklyTrendPerLink(linkId),
+  ]);
+
+  return {
+    summary,
+    hourly,
+    weeklyTrend,
+  };
+}
+
 export {
   getLinkAnalytics,
   getUserAnalytics,
@@ -223,4 +238,5 @@ export {
   getLinkAnalyticsPerHour,
   getWeeklyTrend,
   getWeeklyTrendPerLink,
+  getPerLinkDashboard,
 };

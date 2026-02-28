@@ -4,6 +4,9 @@ import {
   hashString,
 } from "../../utils/generateRandomString";
 
+export const getApiKeysForUser = async (userId: string) => {
+  return ApiKey.find({ userId, isActive: true }).select("-keyHash");
+};
 export const createApiKey = async (
   userId: string,
   name: string,

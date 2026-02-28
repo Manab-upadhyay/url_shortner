@@ -6,6 +6,7 @@ import {
   getLinkAnalyticsPerHour,
   getWeeklyTrend,
   getWeeklyTrendPerLink,
+  getPerLinkDashboard,
 } from "./analytics.service";
 import { asyncHandler } from "../../utils/asynchandler";
 import { ApiError } from "../../utils/ApiError";
@@ -94,6 +95,17 @@ export const getWeeklyTrendPerLinkController = asyncHandler(
     });
   },
 );
+export const getPerLinkDashboardController = asyncHandler(
+  async (req: any, res: any) => {
+    const userId = req.user._id;
+    const { linkId } = req.params;
+    if (!linkId) {
+      throw new ApiError(400, "Link ID is required");
+    }
+    const data = await getPerLinkDashboard(linkId, userId);
+    res.status(200).json(data);
+  },
+);
 export default {
   getUserAnalyticsController,
   getLinkAnalyticsController,
@@ -102,4 +114,5 @@ export default {
   getLinkAnalyticsPerHourController,
   getWeeklyTrendController,
   getWeeklyTrendPerLinkController,
+  getPerLinkDashboardController,
 };

@@ -6,6 +6,7 @@ import {
   getLinkAnalyticsPerHourController,
   getWeeklyTrendController,
   getWeeklyTrendPerLinkController,
+  getPerLinkDashboardController,
 } from "./analytics.controller";
 
 import { Router } from "express";
@@ -18,4 +19,6 @@ router.get("/hourly-clicks", protect, getHourlyClicksController);
 router.get("/top-links", protect, getTopLinksController);
 router.get("/weekly-trend", protect, getWeeklyTrendController);
 router.get("/weekly-trend/:linkId", protect, getWeeklyTrendPerLinkController);
+router.get("/dashboard/:linkId", protect, getPerLinkDashboardController);
+
 export default router;
