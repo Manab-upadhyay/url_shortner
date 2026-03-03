@@ -15,6 +15,8 @@ import generateApiKey from "./modules/apiKey/apiKey.route";
 import dashbord from "./modules/dashboard/dashboard.route";
 import userRoutes from "./modules/user/user.route";
 import mediaRoutes from "./media/media.route";
+import emailRoute from "./email/email.route";
+import otpRoute from "./otp/otp.route";
 import { startApiUsageWorker } from "./modules/apiUsage/worker/apiUsage.worker";
 import errorMiddleware from "./middleware/error.middleware";
 import { authRateLimiter } from "./middleware/rateLimiter.middleware";
@@ -47,7 +49,8 @@ app.get("/", (req, res) => {
   res.send("URL Shortener API running 🚀");
 });
 app.use("/api/auth", authRateLimiter, authRoutes);
-
+app.use("/api/email", emailRoute);
+app.use("/api/otp", otpRoute);
 // Dashboard (JWT)
 app.use("/api/links", apiRateLimiter, linkRoutes);
 app.use("/api/analytics", apiRateLimiter, analyticsRoutes);
@@ -57,6 +60,7 @@ app.use("/api/api-keys", apiRateLimiter, generateApiKey);
 app.use("/api/dashboard", apiRateLimiter, dashbord);
 app.use("/api/user", apiRateLimiter, userRoutes);
 app.use("/api/media", apiRateLimiter, mediaRoutes);
+
 // Developer API (versioned)
 app.use("/api/v1/links", apiRateLimiter, developersRoute);
 

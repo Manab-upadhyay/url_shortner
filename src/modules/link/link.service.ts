@@ -55,9 +55,6 @@ async function getUserLinks(
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
-  if (links.length === 0) {
-    throw new Error("No links found for this user");
-  }
   return links;
 }
 async function deleteLink(linkId: string, userId: string) {
