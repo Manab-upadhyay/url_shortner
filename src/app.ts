@@ -16,7 +16,7 @@ import dashbord from "./modules/dashboard/dashboard.route";
 import userRoutes from "./modules/user/user.route";
 import mediaRoutes from "./media/media.route";
 import emailRoute from "./email/email.route";
-import otpRoute from "./otp/otp.route";
+
 import { startApiUsageWorker } from "./modules/apiUsage/worker/apiUsage.worker";
 import errorMiddleware from "./middleware/error.middleware";
 import { authRateLimiter } from "./middleware/rateLimiter.middleware";

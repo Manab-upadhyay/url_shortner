@@ -14,7 +14,7 @@ import {
   checkApiLimit,
   checkLinkLimit,
 } from "../../middleware/usage.middleware";
-import { protect } from "../../middleware/auth.middleware";
+
 
 const router = Router();
 
