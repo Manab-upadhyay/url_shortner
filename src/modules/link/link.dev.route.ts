@@ -5,6 +5,7 @@ import {
   addLinkController,
   getLinkController,
   deleteLinkController,
+  getUserLinksController,
 } from "./link.controller";
 import {
   createLinkSchema,
@@ -33,6 +34,7 @@ router.post(
 
 // Get link info
 router.get("/links/:shortCode", validate(redirectSchema), getLinkController);
+router.get("/getMyLinks", getUserLinksController);
 
 // Delete link
 router.delete("/links/:linkId", deleteLinkController);

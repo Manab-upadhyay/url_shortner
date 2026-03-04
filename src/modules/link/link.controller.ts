@@ -9,12 +9,12 @@ import { asyncHandler } from "../../utils/asynchandler";
 import { ApiError } from "../../utils/ApiError";
 import { incrementLinkCreation } from "../overallUsage/overAllUsage.service";
 export const addLinkController = asyncHandler(async (req: any, res: any) => {
-  const { url, name, expiresAt } = req.body;
+  const { url, name, expiresAt, customAlias } = req.body;
   if (!url || !name) {
     throw new ApiError(400, "URL and name are required");
   }
   const userId = req.userId;
-  const newLink = await addLink(url, name, userId, expiresAt);
+  const newLink = await addLink(url, name, userId, expiresAt, customAlias);
   await incrementLinkCreation(userId);
   res.status(201).json(newLink);
 });

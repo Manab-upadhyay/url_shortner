@@ -50,7 +50,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/auth", authRateLimiter, authRoutes);
 app.use("/api/email", emailRoute);
-app.use("/api/otp", otpRoute);
+
 // Dashboard (JWT)
 app.use("/api/links", apiRateLimiter, linkRoutes);
 app.use("/api/analytics", apiRateLimiter, analyticsRoutes);

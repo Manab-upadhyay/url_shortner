@@ -1,16 +1,14 @@
-import { sendWelcomeEmail } from "./email.service";
+import { VerifyOtp } from "./otp.service";
 import { asyncHandler } from "../utils/asynchandler";
 import { generateOTP } from "../utils/generateOTP";
-import { SendOtp } from "./email.service";
-import {redis} from "../config/cache.redis"
 import bcrypt from "bcrypt";
-
-export const sendWelcomeEmailController = asyncHandler(async (req: any, res: any) => {
-    const { email, name } = req.body;
-    await sendWelcomeEmail(email, name);
-    return res.status(200).json({ message: "Welcome email sent successfully" });
+import { redis } from "../config/cache.redis";
+import { SendOtp } from "./otp.service";
+export const verifyOtpController = asyncHandler(async (req: any, res: any) => {
+    const { email, otp } = req.body;
+    await VerifyOtp(email, otp);
+    return res.status(200).json({ message: "OTP verified successfully" });
 });
-
 export const sendOtpController = asyncHandler(async (req: any, res: any) => {
     const { email } = req.body;
     const otp = generateOTP();
