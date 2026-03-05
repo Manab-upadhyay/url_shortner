@@ -48,14 +48,17 @@ async function getLink(shortCode: string) {
 }
 async function getUserLinks(
   userId: string,
-  page: number = 1,
-  limit: number = 10,
+  page: number ,
+  limit: number 
 ) {
+  console.log(userId, page, limit);
   const links = await Link.find({ userId, isActive: true })
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
-  return links;
+    console.log("links>>",links)
+    const totalLinks = await Link.countDocuments({ userId, isActive: true });
+  return {links, totalLinks};
 }
 async function deleteLink(linkId: string, userId: string) {
   const deletedLink = await Link.findOneAndUpdate(

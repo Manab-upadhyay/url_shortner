@@ -38,12 +38,12 @@ export const getUserLinksController = asyncHandler(
       throw new ApiError(400, "Limit must be a number");
     }
 
-    const links = await getUserLinks(
+    const {links,totalLinks} = await getUserLinks(
       userId,
       parseInt(page) || 1,
       parseInt(limit) || 10,
     );
-    res.status(200).json(links);
+    res.status(200).json({links,totalLinks});
   },
 );
 export const updateLinkController = asyncHandler(async (req: any, res: any) => {

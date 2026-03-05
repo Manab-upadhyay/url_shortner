@@ -6,12 +6,13 @@ import {
 import { getUserLinks } from "../link/link.service";
 import { getApiUsage } from "../apiUsage/apiUsage.service";
 
-export async function getDashboardData(userId: string) {
+export async function getDashboardData(userId: string, page: number = 1, limit: number = 10) {
+
   const [perHourClicks, userAnalytics, userLinks, apiRequests, weeklyTrend] =
     await Promise.all([
       getClicksGroupedByHour(userId),
       getUserAnalytics(userId),
-      getUserLinks(userId),
+      getUserLinks(userId, page, limit),
       getApiUsage(userId),
       getWeeklyTrend(userId),
     ]);
@@ -19,7 +20,8 @@ export async function getDashboardData(userId: string) {
   return {
     perHourClicks: perHourClicks ?? [],
     userAnalytics: userAnalytics ?? { totalLinks: 0, totalClicks: 0 },
-    userLinks: userLinks ?? [],
+    userLinks: userLinks.links ?? [],
+    totalLinks: userLinks.totalLinks ?? 0,
     apiRequests: apiRequests ?? [],
     weeklyTrend: weeklyTrend ?? {
       last7DaysClicks: 0,

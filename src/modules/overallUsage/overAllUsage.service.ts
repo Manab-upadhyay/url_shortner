@@ -26,6 +26,8 @@ async function getCurrentUsage(userId: string) {
      Usage.findOne({ userId, month, year }),
     getApiUsage(userId), // your chart API logic
   ]);
+  console.log("usage", usage);
+  console.log("apiUsage", apiUsage);
   if (!usage) {
     return {
       usage: {
@@ -38,7 +40,7 @@ async function getCurrentUsage(userId: string) {
       apiUsage: normalizeHourlyData(apiUsage),
     };
   }
-
+console.log(normalizeHourlyData(apiUsage))
   return { usage, apiUsage: normalizeHourlyData(apiUsage) };
 }
 export { incrementLinkCreation, getCurrentUsage };
