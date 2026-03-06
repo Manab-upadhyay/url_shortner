@@ -1,7 +1,11 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import dns from "dns";
 
 dotenv.config();
+
+// Railway sometimes fails on IPv6 connections to Gmail. Force IPv4.
+dns.setDefaultResultOrder("ipv4first");
 
 // ── Transporter (Gmail SMTP) ──
 const transporter = nodemailer.createTransport({
