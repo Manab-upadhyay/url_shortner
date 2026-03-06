@@ -1,35 +1,37 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import dns from "dns";
+import { Resend } from "resend";
 
 dotenv.config();
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 // Railway sometimes fails on IPv6 connections to Gmail. Force IPv4.
 dns.setDefaultResultOrder("ipv4first");
 
 // ── Transporter (Gmail SMTP) ──
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Gmail App Password
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  // Force IPv4 in Node.js
-  family: 4
-} as any);
+// const transporter = nodemailer.createTransport({
+//   host: "smtp.gmail.com",
+//   port: 465,
+//   secure: true, // true for 465, false for other ports
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS, // Gmail App Password
+//   },
+//   tls: {
+//     rejectUnauthorized: false
+//   },
+//   // Force IPv4 in Node.js
+//   family: 4
+// } as any);
 
 
-// ── Verify connection on startup ──
-transporter.verify().then(() => {
-  console.log("📧 Email service ready");
-}).catch((err) => {
-  console.error("📧 Email service error:", err.message);
-});
+// // ── Verify connection on startup ──
+// transporter.verify().then(() => {
+//   console.log("📧 Email service ready");
+// }).catch((err) => {
+//   console.error("📧 Email service error:", err.message);
+// });
 
 // ── Generic send helper ──
 interface SendMailOptions {
@@ -40,14 +42,24 @@ interface SendMailOptions {
 }
 
 export async function sendMail({ to, subject, html, text }: SendMailOptions) {
-  const info = await transporter.sendMail({
-    from: `"LinkTrace" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-    text: text ?? "",
-  });
-  return info;
+  try {
+    console.log("📧 Email service started");
+
+    const info = await resend.emails.send({
+      from: `"LinkTrace" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+      text: text ?? "",
+    });
+
+    console.log(" Email sent:", info.data);
+    return info;
+
+  } catch (error) {
+    console.error(" Email service error:", error);
+    throw error;
+  }
 }
 
 // ── Pre-built templates ──
