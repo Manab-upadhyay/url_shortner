@@ -15,5 +15,6 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["test-normalize.ts"]
 }

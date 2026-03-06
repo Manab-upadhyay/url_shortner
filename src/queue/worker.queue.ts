@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import { Worker } from "bullmq";
 import { redis } from "../config/redis.config";
 import countModel from "../modules/count/count.model";
