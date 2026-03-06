@@ -3,6 +3,12 @@ import dotenv from "dotenv";
 dotenv.config();
 import { Redis } from "ioredis";
 
-export const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379", {
-  maxRetriesPerRequest: null, // required by BullMQ
+const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+const useTls = redisUrl.startsWith("rediss://");
+
+export const redis = new Redis(redisUrl, {
+  maxRetriesPerRequest: null,
+  ...(useTls ? { tls: {} } : {}),
+  enableReadyCheck: false,
+  retryStrategy: (times) => Math.min(times * 500, 5000),
 });

@@ -18,7 +18,7 @@ export const checkApiLimit = async (
 
   const limit = PLAN_LIMITS[user.plan].apiRequestsPerMonth;
 
-  if (usage && usage.apiRequests >= limit) {
+  if (usage && usage.usage.apiRequests >= limit) {
     throw new ApiError(429, "Monthly API limit exceeded.");
   }
 
@@ -34,7 +34,7 @@ export const checkLinkLimit = async (req: any, res: any, next: any) => {
 
   const limit = PLAN_LIMITS[user.plan].linksPerMonth;
 
-  if (usage && usage.linksCreated >= limit) {
+  if (usage && usage.usage.linksCreated >= limit) {
     throw new ApiError(429, "Monthly API limit exceeded. Upgrade your plan.");
   }
 

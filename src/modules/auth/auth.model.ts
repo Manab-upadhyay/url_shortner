@@ -6,7 +6,7 @@ export interface IUser extends mongoose.Document {
   password: string;
   name: string;
   tokenversion: number;
-  plan: { enum: string[] };
+  plan: "free" | "pro";
   createdAt: Date;
   updatedAt: Date;
   bio : string ; 
