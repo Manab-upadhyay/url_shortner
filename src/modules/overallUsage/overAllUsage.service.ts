@@ -5,14 +5,7 @@ import { getApiUsage } from "../apiUsage/apiUsage.service";
 import normalizeHourlyData from "../../utils/normaliseHourlyAnalytics";
 async function incrementLinkCreation(userId: string) {
   const { month, year } = getCurrentMonthYear();
-  console.log(
-    "Incrementing link creation for user:",
-    userId,
-    "Month:",
-    month,
-    "Year:",
-    year,
-  );
+
   await Usage.updateOne(
     { userId, month, year },
     { $inc: { linksCreated: 1 } },
@@ -26,8 +19,7 @@ async function getCurrentUsage(userId: string) {
      Usage.findOne({ userId, month, year }),
     getApiUsage(userId), // your chart API logic
   ]);
-  console.log("usage", usage);
-  console.log("apiUsage", apiUsage);
+
   if (!usage) {
     return {
       usage: {

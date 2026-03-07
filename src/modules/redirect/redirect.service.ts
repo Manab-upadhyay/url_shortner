@@ -11,7 +11,7 @@ async function redirect(
   const cachedUrl = await redis.get(`short:${shortCode}`);
   if (cachedUrl) {
     const parsed = JSON.parse(cachedUrl);
-    console.log("returning from redis");
+   
     analyticsQueue
       .add("trackClick", {
         linkId: parsed.linkId,

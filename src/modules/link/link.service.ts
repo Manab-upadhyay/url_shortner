@@ -51,12 +51,10 @@ async function getUserLinks(
   page: number ,
   limit: number 
 ) {
-  console.log(userId, page, limit);
   const links = await Link.find({ userId, isActive: true })
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
-    console.log("links>>",links)
     const totalLinks = await Link.countDocuments({ userId, isActive: true });
   return {links, totalLinks};
 }
