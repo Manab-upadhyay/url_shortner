@@ -62,7 +62,24 @@ async function getUserAnalytics(userId: string) {
       },
     },
   ]);
-  return analytics[0] || { totalLinks: 0, totalClicks: 0 };
+  const linkIds = await Link.find({ userId }, { _id: 1 });
+  
+  const linkIdsArray = linkIds.map((link) => link._id);
+  
+  const todaysClicks = await countModel.countDocuments({
+    linkId: { $in: linkIdsArray },
+    createdAt: {
+      $gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // last 24h
+    },
+   
+  });
+
+  const result= {
+    totalLinks: analytics[0]?.totalLinks || 0,
+    totalClicks: analytics[0]?.totalClicks || 0,
+    todaysClicks: todaysClicks||0
+  }
+  return result;
 }
 async function getClicksGroupedByHour(
   userId: string,
