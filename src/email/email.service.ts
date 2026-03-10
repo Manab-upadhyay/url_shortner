@@ -2,19 +2,27 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import dns from "dns";
 import { Resend } from "resend";
-
+import axios from "axios";
+interface Feedback {
+  mail: string;
+  subject: string;
+  type: string;
+  message: string;
+}
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 // Railway sometimes fails on IPv6 connections to Gmail. Force IPv4.
 dns.setDefaultResultOrder("ipv4first");
 
-// ── Transporter (Gmail SMTP) ──
+// ── Transporter (Brevo SMTP) ──
 // const transporter = nodemailer.createTransport({
-//   service: "gmail",   // let nodemailer handle host/port automatically
+//   host: "smtp-relay.brevo.com",
+//   port: 587,
+//   secure: false, // Use `true` for port 465, `false` for all other ports
 //   auth: {
 //     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
+//     pass: process.env.BREVO_SMTP_KEY,
 //   },
 // });  
 
@@ -34,23 +42,37 @@ interface SendMailOptions {
 }
 
 export async function sendMail({ to, subject, html, text }: SendMailOptions) {
+ console.log("calling email")
   try {
-    console.log("📧 Email service started");
+    console.log(process.env.BREVO_API_KEY)
+    const payload: any = {
+      sender: {
+        email: process.env.EMAIL_USER, // your verified email
+        name: "LinkTrace"
+      },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: html,
+    };
+    
+    if (text) {
+      payload.textContent = text;
+    }
 
-    const info = await resend.emails.send({
-       from: "LinkTrace <onboarding@resend.dev>",
-      to,
-      subject,
-      html,
-      text: text ?? "",
-    });
+    const res = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      payload,
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
-    console.log("✅ Email sent successfully:", info);
-    return info;
-
-  } catch (error) {
-    console.error("❌ Email service exception:", error);
-    throw error;
+    console.log("✅ Email sent:", res.data);
+  } catch (error: any) {
+    console.error("❌ Email send error:", error.response?.data || error.message);
   }
 }
 
@@ -114,6 +136,92 @@ export async function SendOtp(to:string, otp:string){
           If you didn't request this, just ignore this email — your password won't change.
         </p>
       </div>
+    `,
+  });
+}
+export function SendFeedBackResponseEmail(to: string, feedback: Feedback) {
+  return sendMail({
+    to,
+    subject: "Thanks for your feedback — LinkTrace",
+    html: `
+    <div style="font-family:Segoe UI, Arial, sans-serif; background:#f3f4f6; padding:30px;">
+      <div style="max-width:520px;margin:auto;background:white;border-radius:12px;padding:28px;border:1px solid #e5e7eb">
+
+        <h2 style="margin:0;color:#111827;">Thank you for your feedback</h2>
+
+        <p style="color:#374151;font-size:14px;line-height:1.6;margin-top:12px;">
+          We appreciate you taking the time to share your thoughts about <strong>LinkTrace</strong>.
+          Our team will review your feedback and use it to improve the product.
+        </p>
+
+        <div style="margin-top:20px;padding:16px;border-radius:8px;background:#f9fafb;border:1px solid #e5e7eb;">
+          <p style="margin:0;font-size:13px;color:#6b7280;"><strong>Feedback Type</strong></p>
+          <p style="margin:4px 0 12px 0;font-size:14px;color:#111827;">${feedback.type}</p>
+
+          <p style="margin:0;font-size:13px;color:#6b7280;"><strong>Subject</strong></p>
+          <p style="margin:4px 0 12px 0;font-size:14px;color:#111827;">${feedback.subject}</p>
+
+          <p style="margin:0;font-size:13px;color:#6b7280;"><strong>Message</strong></p>
+          <p style="margin:4px 0;font-size:14px;color:#111827;line-height:1.6;">
+            ${feedback.message}
+          </p>
+        </div>
+
+        <p style="margin-top:20px;font-size:14px;color:#374151;">
+          If we need additional details, our team may contact you.
+        </p>
+
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
+
+        <p style="font-size:12px;color:#9ca3af;">
+          — LinkTrace Team
+        </p>
+
+      </div>
+    </div>
+    `,
+  });
+}
+export function SendEmailToAuthority(feedback: Feedback) {
+  return sendMail({
+    to: process.env.EMAIL_USER || "",
+    subject: "📩 New Feedback Received — LinkTrace",
+    html: `
+    <div style="font-family:Segoe UI, Arial, sans-serif;background:#f3f4f6;padding:30px;">
+      <div style="max-width:520px;margin:auto;background:white;border-radius:12px;padding:28px;border:1px solid #e5e7eb">
+
+        <h2 style="margin:0;color:#111827;">New Feedback Submitted</h2>
+
+        <p style="color:#374151;font-size:14px;margin-top:10px;">
+          A user has submitted feedback for <strong>LinkTrace</strong>.
+        </p>
+
+        <div style="margin-top:20px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;padding:16px">
+
+          <p style="margin:0;font-size:13px;color:#6b7280;"><strong>User Email</strong></p>
+          <p style="margin:4px 0 12px 0;font-size:14px;color:#111827;">${feedback.mail}</p>
+
+          <p style="margin:0;font-size:13px;color:#6b7280;"><strong>Feedback Type</strong></p>
+          <p style="margin:4px 0 12px 0;font-size:14px;color:#111827;">${feedback.type}</p>
+
+          <p style="margin:0;font-size:13px;color:#6b7280;"><strong>Subject</strong></p>
+          <p style="margin:4px 0 12px 0;font-size:14px;color:#111827;">${feedback.subject}</p>
+
+          <p style="margin:0;font-size:13px;color:#6b7280;"><strong>Message</strong></p>
+          <p style="margin:4px 0;font-size:14px;color:#111827;line-height:1.6;">
+            ${feedback.message}
+          </p>
+
+        </div>
+
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
+
+        <p style="font-size:12px;color:#9ca3af;">
+          This email was generated automatically by LinkTrace.
+        </p>
+
+      </div>
+    </div>
     `,
   });
 }

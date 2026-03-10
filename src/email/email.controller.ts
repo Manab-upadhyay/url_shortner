@@ -1,4 +1,4 @@
-import { sendWelcomeEmail } from "./email.service";
+import { sendWelcomeEmail, SendEmailToAuthority, SendFeedBackResponseEmail } from "./email.service";
 import { asyncHandler } from "../utils/asynchandler";
 import { generateOTP } from "../utils/generateOTP";
 import { SendOtp } from "./email.service";
@@ -24,4 +24,14 @@ export const sendOtpController = asyncHandler(async (req: any, res: any) => {
 );
     await SendOtp(email, otp);
     return res.status(200).json({ message: "OTP sent successfully" });
+});
+export const SendFeedBackEmailResponseController = asyncHandler(async (req: any, res: any) => {
+    const { email, feedback } = req.body;
+    await SendFeedBackResponseEmail(email, feedback);
+    return res.status(200).json({ message: "Feedback response email sent successfully" });
+});
+export const SendEmailToAuthorityController = asyncHandler(async (req: any, res: any) => {
+    const { feedback } = req.body;
+    await SendEmailToAuthority(feedback);
+    return res.status(200).json({ message: "Email to authority sent successfully" });
 });
