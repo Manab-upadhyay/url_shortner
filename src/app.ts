@@ -26,6 +26,9 @@ import { apiRateLimiter } from "./middleware/rateLimiter.middleware";
 
 const app = express();
 
+// Trust the reverse proxy (e.g. Railway) so rate limits work correctly with X-Forwarded-For
+app.set("trust proxy", 1);
+
 /* =======================
    GLOBAL MIDDLEWARE
 ======================= */

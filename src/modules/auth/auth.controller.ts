@@ -5,6 +5,7 @@ import {
   getUserById,
   updatePassword,
   verifySignupOtp,
+  googleLogin,
 } from "./auth.service";
 import { asyncHandler } from "../../utils/asynchandler";
 import logger from "../../utils/logger";
@@ -73,6 +74,26 @@ const updateUserPasswordController = asyncHandler(
   }
 );
 
+const googleLoginController = asyncHandler(async (req: any, res: any) => {
+  const { idToken } = req.body;
+  if (!idToken) {
+    return res.status(400).json({ message: "idToken is required" });
+  }
+
+  const { token, user } = await googleLogin(idToken);
+  
+  logger.info(`Google login successful for user: ${user.email}`);
+  
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "development" ? "strict" : "none",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+
+  return res.status(200).json({ message: "Google login successful", user });
+});
+
 export {
   signupController,
   verifySignupController,
@@ -80,4 +101,5 @@ export {
   logoutController,
   getUserController,
   updateUserPasswordController,
+  googleLoginController,
 };

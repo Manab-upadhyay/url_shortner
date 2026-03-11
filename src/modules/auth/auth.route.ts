@@ -6,6 +6,7 @@ import {
   logoutController,
   getUserController,
   updateUserPasswordController,
+  googleLoginController,
 } from "./auth.controller";
 import { protect } from "../../middleware/auth.middleware";
 
@@ -15,6 +16,7 @@ const router = Router();
 router.post("/signup", signupController);
 router.post("/verify-signup", verifySignupController);
 router.post("/login", loginController);
+router.post("/google", googleLoginController);
 router.put("/updatePassword", updateUserPasswordController);
 
 // Protected

@@ -5,6 +5,11 @@ import { ApiError } from "../../utils/ApiError";
 import { redis } from "../../config/cache.redis";
 import { generateOTP } from "../../utils/generateOTP";
 import { SendOtp, sendWelcomeEmail } from "../../email/email.service";
+import { OAuth2Client } from "google-auth-library";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 async function comparePassword(this: any, password: string) {
   return await bcrypt.compare(password, this.password);
@@ -101,6 +106,59 @@ async function login(email: string, password: string) {
   return { user: safeUser, token };
 }
 
+// ── Google Login ──
+async function googleLogin(idToken: string) {
+  const ticket = await googleClient.verifyIdToken({
+    idToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const payload = ticket.getPayload();
+  if (!payload) {
+    throw new ApiError(400, "Invalid Google token");
+  }
+
+  const { sub: googleId, email, name, picture } = payload;
+  if (!email || !name) {
+     throw new ApiError(400, "Missing email or name from Google payload");
+  }
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    // Create new google user
+    user = new User({
+      email,
+      name,
+      provider: "google",
+      googleId,
+      avatar: picture || "",
+    });
+    await user.save();
+    
+    // Optional: send welcome email locally
+    sendWelcomeEmail(email, name).catch(() => {});
+  } else {
+    // Optionally link google account if changing provider logic is needed
+    if (user.provider !== "google" && !user.googleId) {
+       user.googleId = googleId;
+       await user.save();
+    }
+  }
+
+  const token = generateToken(user._id.toString(), user.tokenversion);
+  const safeUser = {
+    id: user._id,
+    email: user.email,
+    name: user.name,
+    bio: user.bio,
+    image: user.avatar,
+    provider: user.provider,
+  };
+
+  return { user: safeUser, token };
+}
+
 // ── Logout ──
 async function logout(userId: string) {
   const user = await User.findById(userId);
@@ -134,4 +192,4 @@ async function updatePassword(email: string, newPassword: string) {
   await user.save();
 }
 
-export { signup, verifySignupOtp, login, logout, getUserById, updatePassword };
+export { signup, verifySignupOtp, login, logout, getUserById, updatePassword, googleLogin };

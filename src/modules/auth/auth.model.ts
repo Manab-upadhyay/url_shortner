@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 
 export interface IUser extends mongoose.Document {
   email: string;
-  password: string;
+  password?: string;
   name: string;
   tokenversion: number;
   plan: "free" | "pro";
@@ -12,6 +12,8 @@ export interface IUser extends mongoose.Document {
   bio : string ; 
   avatar: string;
   avatarPublicId: string;
+  provider: "local" | "google";
+  googleId?: string;
   preferences : {
     emailNotification : boolean ; 
     marketingEmailNotification : boolean 
@@ -21,9 +23,25 @@ export interface IUser extends mongoose.Document {
 const userSchema = new mongoose.Schema<IUser>(
   {
     email: { type: String, required: true, unique: true, index: true },
-    password: { type: String, required: true, minlength: 6 },
+    password: { 
+      type: String, 
+      required: function (this: IUser) {
+        return this.provider === "local";
+      },
+      minlength: 6 
+    },
     name: { type: String, required: true, trim: true },
     tokenversion: { type: Number, default: 0 },
+    provider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local"
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true
+    },
     plan: {
       type: String,
       enum: ["free", "pro"],
@@ -58,7 +76,7 @@ const userSchema = new mongoose.Schema<IUser>(
   },
 );
 userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+  if (!this.isModified("password") || !this.password) return;
 
   this.password = await bcrypt.hash(this.password, 10);
 });
