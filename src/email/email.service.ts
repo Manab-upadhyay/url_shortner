@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import dns from "dns";
 import { Resend } from "resend";
 import axios from "axios";
+import logger from "../utils/logger";
 interface Feedback {
   mail: string;
   subject: string;
@@ -28,9 +29,9 @@ dns.setDefaultResultOrder("ipv4first");
 
 // // ── Verify connection on startup ──
 // transporter.verify().then(() => {
-//   console.log("📧 Email service ready");
+//   logger.info("📧 Email service ready");
 // }).catch((err) => {
-//   console.error("📧 Email service error:", err.message);
+//   logger.error("📧 Email service error:", err.message);
 // });
 
 // ── Generic send helper ──
@@ -42,9 +43,9 @@ interface SendMailOptions {
 }
 
 export async function sendMail({ to, subject, html, text }: SendMailOptions) {
- console.log("calling email")
+ logger.info("calling email")
   try {
-    console.log(process.env.BREVO_API_KEY)
+    logger.info(process.env.BREVO_API_KEY)
     const payload: any = {
       sender: {
         email: process.env.EMAIL_USER, // your verified email
@@ -70,9 +71,9 @@ export async function sendMail({ to, subject, html, text }: SendMailOptions) {
       }
     );
 
-    console.log("✅ Email sent:", res.data);
+    logger.info(`✅ Email sent: ${JSON.stringify(res.data)}`);
   } catch (error: any) {
-    console.error("❌ Email send error:", error.response?.data || error.message);
+    logger.error("❌ Email send error:", error.response?.data || error.message);
   }
 }
 

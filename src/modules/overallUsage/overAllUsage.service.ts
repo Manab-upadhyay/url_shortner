@@ -32,7 +32,7 @@ async function getCurrentUsage(userId: string) {
       apiUsage: normalizeHourlyData(apiUsage),
     };
   }
-console.log(normalizeHourlyData(apiUsage))
+
   return { usage, apiUsage: normalizeHourlyData(apiUsage) };
 }
 export { incrementLinkCreation, getCurrentUsage };

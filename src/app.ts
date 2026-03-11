@@ -4,6 +4,8 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import morgan from "morgan";
+import { stream } from "./utils/logger";
 import authRoutes from "./modules/auth/auth.route";
 import linkRoutes from "./modules/link/link.route";
 import redirectRoutes from "./modules/redirect/redirect.route";
@@ -30,6 +32,7 @@ const app = express();
 
 app.use(helmet());
 app.use(express.json());
+app.use(morgan("combined", { stream }));
 
 const allowedOrigins = [
   "http://localhost:5173",

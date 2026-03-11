@@ -7,6 +7,7 @@ import {
   verifySignupOtp,
 } from "./auth.service";
 import { asyncHandler } from "../../utils/asynchandler";
+import logger from "../../utils/logger";
 
 // Step 1: Signup → sends OTP
 const signupController = asyncHandler(async (req: any, res: any) => {
@@ -34,7 +35,7 @@ const verifySignupController = asyncHandler(async (req: any, res: any) => {
 const loginController = asyncHandler(async (req: any, res: any) => {
   const { email, password } = req.body;
   const { token, user } = await login(email, password);
-console.log(process.env.NODE_ENV)
+  logger.info(`Login attempt in environment: ${process.env.NODE_ENV}`);
   res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

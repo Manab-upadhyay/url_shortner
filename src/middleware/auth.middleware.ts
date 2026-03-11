@@ -1,6 +1,7 @@
 import { verifyToken } from "../utils/jwt.utils";
 import User from "../modules/auth/auth.model";
 import { ApiError } from "../utils/ApiError";
+import logger from "../utils/logger";
 
 export const protect = async (req: any, res: any, next: any) => {
   try {
@@ -22,7 +23,7 @@ export const protect = async (req: any, res: any, next: any) => {
     req.userId = user._id.toString();
     next();
   } catch (error: any) {
-    console.log("Auth error:", error);
+    logger.error("Auth error:", error);
     if (error.name === "TokenExpiredError") {
       return next(new ApiError(401, "Token expired"));
     }

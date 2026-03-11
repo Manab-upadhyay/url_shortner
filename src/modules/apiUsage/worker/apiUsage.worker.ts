@@ -3,9 +3,10 @@ import { redis } from "../../../config/cache.redis";
 import cron from "node-cron";
 import overAllUsageModel from "../../overallUsage/overAllUsage.model";
 import getCurrentYearMonth from "../../../utils/getCurrentYearMonth";
+import logger from "../../../utils/logger";
 export const startApiUsageWorker = () => {
   cron.schedule("*/5 * * * *", async () => {
-    console.log("Running API usage flush job...");
+    logger.info("Running API usage flush job...");
     await flushApiUsage();
   });
 };
@@ -48,5 +49,5 @@ export const flushApiUsage = async () => {
     }
   }
 
-  console.log("Flush completed");
+  logger.info("Flush completed");
 };

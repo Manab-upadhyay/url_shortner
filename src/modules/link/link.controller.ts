@@ -9,6 +9,7 @@ import {
 import { asyncHandler } from "../../utils/asynchandler";
 import { ApiError } from "../../utils/ApiError";
 import { incrementLinkCreation } from "../overallUsage/overAllUsage.service";
+import logger from "../../utils/logger";
 export const addLinkController = asyncHandler(async (req: any, res: any) => {
   const { url, name, expiresAt, customAlias } = req.body;
   if (!url || !name) {
@@ -21,7 +22,7 @@ export const addLinkController = asyncHandler(async (req: any, res: any) => {
 });
 export const getLinkController = asyncHandler(async (req: any, res: any) => {
   const { shortCode } = req.params;
-  console.log(shortCode);
+  logger.info(`Getting link for shortCode: ${shortCode}`);
   if (!shortCode) {
     throw new ApiError(400, "Short code is required");
   }
