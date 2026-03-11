@@ -16,7 +16,6 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const transports: winston.transport[] = [];
 
-// In production, log to files with daily rotation and JSON format
 if (isProduction) {
   transports.push(
     new winston.transports.DailyRotateFile({
@@ -34,6 +33,9 @@ if (isProduction) {
       zippedArchive: true,
       maxSize: "20m",
       maxFiles: "14d",
+      format: combine(timestamp(), json()),
+    }),
+    new winston.transports.Console({
       format: combine(timestamp(), json()),
     })
   );

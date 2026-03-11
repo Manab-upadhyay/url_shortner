@@ -16,7 +16,13 @@ export const flushApiUsage = async () => {
     count: 100,
   });
 
+  let keysFlushed = 0;
+
   for await (const keys of stream) {
+    if (keys.length > 0) {
+       logger.info(`Found ${keys.length} API usage keys to flush...`);
+    }
+    
     for (const key of keys) {
       const parts = key.split(":");
 
@@ -46,8 +52,9 @@ export const flushApiUsage = async () => {
       );
 
       await redis.del(key);
+      keysFlushed++;
     }
   }
 
-  logger.info("Flush completed");
+  logger.info(`Flush completed. Total keys flushed this cycle: ${keysFlushed}`);
 };

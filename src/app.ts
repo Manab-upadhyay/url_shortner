@@ -65,6 +65,17 @@ startApiUsageWorker();
 app.get("/", (req, res) => {
   res.send("URL Shortener API running");
 });
+
+app.get("/api/health", async (req, res) => {
+  try {
+    const { redis } = await import("./config/cache.redis");
+    const redisStatus = redis.status;
+    res.status(200).json({ status: "ok", redis: redisStatus });
+  } catch (error: any) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
 app.use("/api/auth", authRateLimiter, authRoutes);
 app.use("/api/email", emailRoute);
 
