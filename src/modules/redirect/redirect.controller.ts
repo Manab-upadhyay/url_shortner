@@ -14,10 +14,10 @@ export const redirectController = asyncHandler(async (req: any, res: any) => {
     throw new ApiError(400, "Short code is required");
   }
   const start = performance.now();
-  const url = await redirect(shortCode, ip, userAgent, req.userId);
+  const { url, cacheSource } = await redirect(shortCode, ip, userAgent, req.userId);
   const duration = performance.now() - start;
 
-  res.setHeader('Server-Timing', `db;dur=${duration};desc="Database/Cache Lookup"`);
+  res.setHeader('Server-Timing', `lookup;dur=${duration.toFixed(2)};desc="${cacheSource}"`);
 
   return res.redirect(url);
 });

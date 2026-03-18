@@ -33,7 +33,8 @@ app.set("trust proxy", 1);
 /* =======================
    GLOBAL MIDDLEWARE
 ======================= */
-
+//redirect
+app.use("/",  redirectRoutes);
 app.use(helmet());
 app.use(express.json());
 app.use(morgan("combined", { stream }));
@@ -53,6 +54,7 @@ app.use(
       }
     },
     credentials: true,
+    
   })
 );
 
@@ -89,7 +91,7 @@ app.get("/api/health", async (req, res) => {
 
 app.use("/api/auth", authRateLimiter, authRoutes);
 app.use("/api/email", emailRoute);
-app.use("/", apiRateLimiter, redirectRoutes);
+
 app.use(csrfProtection);
 // Dashboard (JWT)
 app.use("/api/links", apiRateLimiter, linkRoutes);

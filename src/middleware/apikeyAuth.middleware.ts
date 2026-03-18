@@ -14,10 +14,8 @@ export const apiKeyAuth = asyncHandler(
     const fullKey = authHeader.split(" ")[1];
 
     const apiKey = await validateApiKey(fullKey);
-    logger.info(`apikey validated: ${apiKey}`);
     req.userId = apiKey.userId.toString();
     req.apiKeyId = apiKey._id.toString();
-    logger.info(`user: ${req.userId}`);
 
     // Track API usage
     await incrementApiUsage(req.userId, req.apiKeyId, req.path);
