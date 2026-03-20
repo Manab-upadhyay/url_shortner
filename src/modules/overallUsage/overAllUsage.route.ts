@@ -2,8 +2,8 @@ import { Router } from "express";
 import { protect } from "../../middleware/auth.middleware";
 import { getUsageController } from "./overAllUsage.controller";
 
-const router = Router();
+const overAllUsageRoute = Router();
 
-router.get("/current", protect, getUsageController);
+overAllUsageRoute.get("/current", protect, getUsageController);
 
-export default router;
+export default overAllUsageRoute;

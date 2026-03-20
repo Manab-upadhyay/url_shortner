@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { sendWelcomeEmailController, SendEmailToAuthorityController, SendFeedBackEmailResponseController } from "./email.controller";
 
-const router = Router();
+const emailRoute = Router();
 
-router.post("/send-welcome-email", sendWelcomeEmailController);
-router.post("/send-feedback-response", SendFeedBackEmailResponseController)
-router.post("/send-email-to-authority", SendEmailToAuthorityController)
+emailRoute.post("/send-welcome-email", sendWelcomeEmailController);
+emailRoute.post("/send-feedback-response", SendFeedBackEmailResponseController)
+emailRoute.post("/send-email-to-authority", SendEmailToAuthorityController)
 
-export default router;
+export default emailRoute;

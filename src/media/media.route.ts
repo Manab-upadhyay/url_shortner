@@ -5,8 +5,8 @@ import {
   uploadAvatarController,
 } from "./media.controller";
 
-const router = Router();
+const mediaRoute = Router();
 
-router.post("/upload-image", protect, uploadMiddleware, uploadAvatarController);
+mediaRoute.post("/upload-image", protect, uploadMiddleware, uploadAvatarController);
 
-export default router;
+export default mediaRoute;

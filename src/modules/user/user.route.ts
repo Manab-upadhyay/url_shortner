@@ -2,8 +2,8 @@ import { updateUserDetailsController } from "./user.controller";
 import { Router } from "express";
 import { protect } from "../../middleware/auth.middleware";
 
-const router = Router();
+const userRoutes = Router();
 
-router.put("/updateUser", protect, updateUserDetailsController);
+userRoutes.put("/updateUser", protect, updateUserDetailsController);
 
-export default router;
+export default userRoutes;

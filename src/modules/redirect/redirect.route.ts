@@ -1,6 +1,6 @@
 import { redirectController } from "./redirect.controller";
 import { Router } from "express";
 
-const router = Router();
-router.get("/:shortCode", redirectController);
-export default router;
+const redirectRoute = Router();
+redirectRoute.get("/:shortCode", redirectController);
+export default redirectRoute;

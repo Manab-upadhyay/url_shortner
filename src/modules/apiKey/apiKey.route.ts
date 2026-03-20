@@ -6,12 +6,12 @@ import {
 import { protect } from "../../middleware/auth.middleware";
 
 import { Router } from "express";
-const router = Router();
-router.get("/dashboard/api-keys", protect, getApiKeysController);
-router.post("/dashboard/api-key", protect, createApiContoller);
-router.delete(
+const apiKeyRoute = Router();
+apiKeyRoute.get("/dashboard/api-keys", protect, getApiKeysController);
+apiKeyRoute.post("/dashboard/api-key", protect, createApiContoller);
+apiKeyRoute.delete(
   "/dashboard/deleteApiKey/:apiKeyId",
   protect,
   revokeApiKeyController,
 );
-export default router;
+export default apiKeyRoute;

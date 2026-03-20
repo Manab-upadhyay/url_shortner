@@ -11,14 +11,14 @@ import {
 
 import { Router } from "express";
 import { protect } from "../../middleware/auth.middleware";
-const router = Router();
-router.get("/user", protect, getUserAnalyticsController);
-router.get("/link/:linkId", protect, getLinkAnalyticsController);
-router.get("/link/:linkId/hourly", protect, getLinkAnalyticsPerHourController);
-router.get("/hourly-clicks", protect, getHourlyClicksController);
-router.get("/top-links", protect, getTopLinksController);
-router.get("/weekly-trend", protect, getWeeklyTrendController);
-router.get("/weekly-trend/:linkId", protect, getWeeklyTrendPerLinkController);
-router.get("/dashboard/:linkId", protect, getPerLinkDashboardController);
+const analyticsRoute = Router();
+analyticsRoute.get("/user", protect, getUserAnalyticsController);
+analyticsRoute.get("/link/:linkId", protect, getLinkAnalyticsController);
+analyticsRoute.get("/link/:linkId/hourly", protect, getLinkAnalyticsPerHourController);
+analyticsRoute.get("/hourly-clicks", protect, getHourlyClicksController);
+analyticsRoute.get("/top-links", protect, getTopLinksController);
+analyticsRoute.get("/weekly-trend", protect, getWeeklyTrendController);
+analyticsRoute.get("/weekly-trend/:linkId", protect, getWeeklyTrendPerLinkController);
+analyticsRoute.get("/dashboard/:linkId", protect, getPerLinkDashboardController);
 
-export default router;
+export default analyticsRoute;

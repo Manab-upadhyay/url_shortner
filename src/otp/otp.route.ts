@@ -1,8 +1,8 @@
 import { verifyOtpController,sendOtpController } from "./otp.controller";
 import Router from "express"
 
-const router= Router()
+const otpRoute= Router()
 
-router.post("/verify-otp", verifyOtpController)
-router.post("/send-otp", sendOtpController)
-export default router
+otpRoute.post("/verify-otp", verifyOtpController)
+otpRoute.post("/send-otp", sendOtpController)
+export default otpRoute

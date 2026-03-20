@@ -13,22 +13,22 @@ import {
   redirectSchema,
 } from "../../validator/link.validator";
 import { checkApiLimit } from "../../middleware/usage.middleware";
-const router = Router();
-router.post(
+const linkRoute = Router();
+linkRoute.post(
   "/addLink",
   protect,
   validate(createLinkSchema),
   checkApiLimit,
   addLinkController,
 );
-router.get(
+linkRoute.get(
   "/getLink/:shortCode",
   protect,
   validate(redirectSchema),
   getLinkController,
 );
-router.get("/getUserLinks", protect, getUserLinksController);
-router.get("/getTopLinks", protect, getTopLinksController);
-router.delete("/deleteLink/:linkId", protect, deleteLinkController);
+linkRoute.get("/getUserLinks", protect, getUserLinksController);
+linkRoute.get("/getTopLinks", protect, getTopLinksController);
+linkRoute.delete("/deleteLink/:linkId", protect, deleteLinkController);
 
-export default router;
+export default linkRoute;
