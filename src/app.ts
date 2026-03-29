@@ -92,7 +92,8 @@ app.get("/api/health", async (req, res) => {
 
 app.use("/api/auth", authRateLimiter, authRoutes);
 app.use("/api/email", emailRoute);
-
+// Developer API (versioned)
+app.use("/api/v1/links", apiRateLimiter, developersRoute);
 app.use(csrfProtection);
 // Dashboard (JWT)
 app.use("/api/links", apiRateLimiter, linkRoutes);
@@ -105,10 +106,7 @@ app.use("/api/user", apiRateLimiter, userRoutes);
 app.use("/api/media", apiRateLimiter, mediaRoutes);
 app.use("/api/live", apiRateLimiter, liveTrackingRoute);
 
-// Developer API (versioned)
-app.use("/api/v1/links", apiRateLimiter, developersRoute);
 
-// Public redirect
 
 app.use(errorMiddleware); // Global error handler (LAST)
 
