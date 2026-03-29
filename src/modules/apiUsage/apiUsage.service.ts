@@ -1,5 +1,6 @@
 import { redis } from "../../config/cache.redis";
 import ApirouteUsage from "./apiUsage.model";
+import { incrementApiRequest } from "../overallUsage/overAllUsage.service";
 
 export const incrementApiUsage = async (
   userId: string,
@@ -16,6 +17,9 @@ export const incrementApiUsage = async (
   await redis.incr(`${baseKey}:endpoint:${endpoint}`);
 
   await redis.expire(`${baseKey}:total`, 7200);
+
+  // Sync with monthly overall usage
+  await incrementApiRequest(userId);
 };
 
 export const getApiUsage = async (userId: string) => {

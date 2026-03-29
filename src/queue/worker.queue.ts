@@ -7,6 +7,7 @@ import countModel from "../modules/count/count.model";
 import Link from "../modules/link/link.model";
 import ConnectToDatabase from "../config/db.config";
 import logger from "../utils/logger";
+import { incrementClick } from "../modules/overallUsage/overAllUsage.service";
 
 const getFlagEmoji = (countryCode: string) => {
   if (!countryCode) return "📍";
@@ -27,7 +28,7 @@ console.log("bull mq started ")
       countryCode: "",
       city: "Unknown",
     };
-
+console.log("ip", ip)
     try {
       const getLocation = await fetch(
        `https://ipinfo.io/${ip}/json`
@@ -45,7 +46,16 @@ console.log("bull mq started ")
       logger.error("Geo lookup failed:", err);
     }
 console.log("userLocation", userLocation)
-    await Link.updateOne({ _id: linkId }, { $inc: { clicks: 1 } });
+    const updatedLink = await Link.findOneAndUpdate(
+      { _id: linkId },
+      { $inc: { clicks: 1 } },
+      { new: true }
+    );
+
+    if (updatedLink && updatedLink.userId) {
+      await incrementClick(updatedLink.userId.toString());
+    }
+
     await countModel.create({
       linkId,
       ip,

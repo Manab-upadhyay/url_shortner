@@ -12,13 +12,13 @@ import {
   createLinkSchema,
   redirectSchema,
 } from "../../validator/link.validator";
-import { checkApiLimit } from "../../middleware/usage.middleware";
+import { checkLinkLimit } from "../../middleware/usage.middleware";
 const linkRoute = Router();
 linkRoute.post(
   "/addLink",
   protect,
   validate(createLinkSchema),
-  checkApiLimit,
+  checkLinkLimit,
   addLinkController,
 );
 linkRoute.get(

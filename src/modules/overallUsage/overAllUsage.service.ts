@@ -35,4 +35,24 @@ async function getCurrentUsage(userId: string) {
 
   return { usage, apiUsage: normalizeHourlyData(apiUsage) };
 }
-export { incrementLinkCreation, getCurrentUsage };
+async function incrementApiRequest(userId: string) {
+  const { month, year } = getCurrentMonthYear();
+
+  await Usage.updateOne(
+    { userId, month, year },
+    { $inc: { apiRequests: 1 } },
+    { upsert: true },
+  );
+}
+
+async function incrementClick(userId: string) {
+  const { month, year } = getCurrentMonthYear();
+
+  await Usage.updateOne(
+    { userId, month, year },
+    { $inc: { totalClicks: 1 } },
+    { upsert: true },
+  );
+}
+
+export { incrementLinkCreation, getCurrentUsage, incrementApiRequest, incrementClick };
