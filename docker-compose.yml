@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    container_name: linkTrace
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    restart: always
+
+  worker:
+    build: .
+    container_name: linkTrace_worker
+    command: npm run worker
+    env_file:
+      - .env
+    restart: always
