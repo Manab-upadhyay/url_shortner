@@ -19,6 +19,7 @@ import userRoutes from "./modules/user/user.route";
 import mediaRoutes from "./media/media.route";
 import emailRoute from "./email/email.route";
 import liveTrackingRoute from "./modules/liveTracking/liveTracking.route";
+import ragRoutes from "./modules/rag/rag.route";
 
 import { startApiUsageWorker } from "./modules/apiUsage/worker/apiUsage.worker";
 import errorMiddleware from "./middleware/error.middleware";
@@ -105,6 +106,7 @@ app.use("/api/dashboard", apiRateLimiter, dashbord);
 app.use("/api/user", apiRateLimiter, userRoutes);
 app.use("/api/media", apiRateLimiter, mediaRoutes);
 app.use("/api/live", apiRateLimiter, liveTrackingRoute);
+app.use("/api/rag", apiRateLimiter, ragRoutes);
 
 
 
