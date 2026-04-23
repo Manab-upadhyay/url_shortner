@@ -14,7 +14,6 @@ export interface LiveClickEvent {
  */
 export async function getRecentClicks(linkId: string): Promise<LiveClickEvent[]> {
   const raw = await redis.lrange(`live:history:${linkId}`, 0, 19);
-  console.log("raw", raw)
   return raw.map((item) => {
     try {
       return JSON.parse(item) as LiveClickEvent;
