@@ -11,7 +11,7 @@ import {
   HumanMessagePromptTemplate,
 } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import { getPineconeIndex } from "../../config/pinecone.config";
 import logger from "../../utils/logger";
 
@@ -26,7 +26,7 @@ function getEmbeddings(): GoogleGenerativeAIEmbeddings {
   if (!embeddings) {
     embeddings = new GoogleGenerativeAIEmbeddings({
       apiKey: process.env.GEMINI_API_KEY,
-      modelName: "text-embedding-004",
+      model: "gemini-embedding-2",
     });
   }
   return embeddings;
@@ -53,15 +53,28 @@ export async function ingestPDF(
   logger.info(`Starting PDF ingestion for: ${fileName}`);
 
   // 1. Parse PDF → raw text
-  const pdfData = await pdfParse(fileBuffer);
-  const rawText = pdfData.text;
+  // Convert Node.js Buffer to Uint8Array for pdf-parse compatibility
+  const uint8Data = new Uint8Array(fileBuffer.buffer, fileBuffer.byteOffset, fileBuffer.byteLength);
+  console.log(`[DEBUG] Buffer size: ${fileBuffer.length}, Uint8Array size: ${uint8Data.length}`);
+
+  const pdf = new PDFParse({ data: uint8Data });
+  const textResult = await pdf.getText();
+
+  const rawText = textResult.text;
+  const numpages = textResult.total;
+
+  
+  // Debug: log what we got back
+  console.log(`[DEBUG] getText() returned: total=${numpages}, text length=${rawText?.length ?? 0}, pages count=${textResult.pages?.length ?? 0}`);
+  console.log(`[DEBUG] First 300 chars: "${rawText?.substring(0, 300)}"`);
+  logger.info(`getText() returned: total=${numpages}, text length=${rawText?.length ?? 0}, pages=${textResult.pages?.length ?? 0}`);
 
   if (!rawText || rawText.trim().length === 0) {
-    throw new Error("PDF appears to be empty or could not be parsed");
+    throw new Error("PDF appears to be empty or could not be parsed. It may be a scanned/image-based PDF with no extractable text.");
   }
 
   logger.info(
-    `Parsed PDF: ${pdfData.numpages} pages, ${rawText.length} characters`
+    `Parsed PDF: ${numpages} pages, ${rawText.length} characters`
   );
 
   // 2. Split into chunks
@@ -76,7 +89,7 @@ export async function ingestPDF(
     [
       {
         source: fileName,
-        totalPages: pdfData.numpages,
+        totalPages: numpages,
         ingestedAt: new Date().toISOString(),
       },
     ]
@@ -90,12 +103,38 @@ export async function ingestPDF(
 
   logger.info(`Split into ${documents.length} chunks`);
 
+  if (documents.length === 0) {
+    throw new Error("PDF text was extracted but produced 0 chunks after splitting. The PDF may not contain enough meaningful text.");
+  }
+
   // 3. Embed & upsert into Pinecone
   const pineconeIndex = getPineconeIndex();
 
-  await PineconeStore.fromDocuments(documents, getEmbeddings(), {
-    pineconeIndex,
+  // Debug: test embeddings first
+  try {
+    const testEmbedding = await getEmbeddings().embedQuery(documents[0].pageContent);
+    console.log(`[DEBUG] Test embedding dimension: ${testEmbedding.length}, first 3 values: [${testEmbedding.slice(0, 3).join(', ')}]`);
+  } catch (embErr: any) {
+    console.error(`[DEBUG] Embedding FAILED:`, embErr.message);
+    throw new Error(`Embedding generation failed: ${embErr.message}`);
+  }
+
+  // Debug: log documents being sent
+  console.log(`[DEBUG] Sending ${documents.length} documents to PineconeStore.fromDocuments()`);
+  documents.forEach((doc, i) => {
+    console.log(`[DEBUG]   Chunk ${i}: ${doc.pageContent.length} chars, metadata keys: ${Object.keys(doc.metadata).join(', ')}`);
   });
+
+  try {
+    await PineconeStore.fromDocuments(documents, getEmbeddings(), {
+      pineconeIndex,
+    });
+    console.log(`[DEBUG] PineconeStore.fromDocuments() succeeded`);
+  } catch (pineconeErr: any) {
+    console.error(`[DEBUG] Pinecone upsert FAILED:`, pineconeErr.message);
+    console.error(`[DEBUG] Full error:`, JSON.stringify(pineconeErr, null, 2));
+    throw pineconeErr;
+  }
 
   // Reset cached vector store so it picks up new documents
   vectorStore = null;
@@ -162,7 +201,7 @@ export async function ragChat(
   // 3. Create the prompt chain
   const chatModel = new ChatGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY,
-    modelName: "gemini-2.0-flash",
+    model: "gemini-2.0-flash",
     temperature: 0.2, // Low temperature for factual answers
     maxOutputTokens: 2048,
   });
