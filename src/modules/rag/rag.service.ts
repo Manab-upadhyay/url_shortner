@@ -27,6 +27,7 @@ function getEmbeddings(): GoogleGenerativeAIEmbeddings {
     embeddings = new GoogleGenerativeAIEmbeddings({
       apiKey: process.env.GEMINI_API_KEY,
       model: "gemini-embedding-2",
+      maxRetries: 3,
     });
   }
   return embeddings;
@@ -201,9 +202,10 @@ export async function ragChat(
   // 3. Create the prompt chain
   const chatModel = new ChatGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY,
-    model: "gemini-2.0-flash",
+         model: "gemini-2.5-flash",
     temperature: 0.2, // Low temperature for factual answers
     maxOutputTokens: 2048,
+    maxRetries: 3,
   });
 
   const prompt = ChatPromptTemplate.fromMessages([
@@ -213,11 +215,22 @@ export async function ragChat(
 
   const chain = prompt.pipe(chatModel).pipe(new StringOutputParser());
 
-  // 4. Generate answer
-  const answer = await chain.invoke({
-    context: contextText,
-    question: question,
-  });
+  // 4. Generate answer with error handling
+  let answer: string;
+  try {
+    answer = await chain.invoke({
+      context: contextText,
+      question: question,
+    });
+  } catch (error: any) {
+    if (error.message?.includes("429") || error.message?.includes("quota")) {
+      logger.error("Gemini API Quota Exceeded (429)");
+      answer = "I'm sorry, but the AI service is currently at its capacity or has exceeded its rate limit. Please try again in a few minutes.";
+    } else {
+      logger.error(`Gemini API Error: ${error.message}`);
+      throw error;
+    }
+  }
 
   // 5. Build source references
   const sources = relevantDocs.map((doc: Document) => ({
