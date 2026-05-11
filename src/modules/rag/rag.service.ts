@@ -14,6 +14,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PDFParse } from "pdf-parse";
 import { getPineconeIndex } from "../../config/pinecone.config";
 import logger from "../../utils/logger";
+import * as analyticsService from "../analytics/analytics.service";
 
 // ─────────────────────────────────────────────
 //  Shared instances (lazy-initialized)
@@ -154,39 +155,96 @@ export async function ingestPDF(
 //  RAG Chat Pipeline
 // ─────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are an expert API documentation assistant for LinkTrace — a URL shortener and analytics platform.
+const SYSTEM_PROMPT = `You are an expert assistant for LinkTrace — a URL shortener and analytics platform.
 
-Your job is to answer user questions accurately based ONLY on the provided context from the API documentation.
+You have two sources of information to answer user questions:
+1. **API Documentation**: Technical details about endpoints, methods, and integration.
+2. **User's Real-time Analytics**: Current data about the user's specific links, total clicks, and top-performing links.
 
 Rules:
-1. Answer ONLY using information from the context below. If the answer is not in the context, say "I don't have enough information in the docs to answer that."
-2. Be precise and technical. Include endpoint paths, HTTP methods, request/response formats when relevant.
-3. Use markdown formatting for code blocks, lists, and emphasis.
-4. If you reference an endpoint, always include the full path (e.g., POST /api/v1/links).
-5. Keep answers concise but complete.
+1. If the question is about the user's data (e.g., "my links", "total clicks", "top links"), prioritize using the 'User's Real-time Analytics' context.
+2. If the user asks for a summary or status, provide a mix of analytics.
+3. If the question is technical or about how to use the platform, use the 'API Documentation' context.
+4. If an answer is not in either context, say "I don't have enough information to answer that."
+5. Use markdown for formatting. Include code blocks and bullet points where helpful.
+6. Be professional, concise, and technical.
 
-Context from API Documentation:
 ---
+USER'S REAL-TIME ANALYTICS:
+{analyticsContext}
+
+---
+CONTEXT FROM API DOCUMENTATION:
 {context}
 ---`;
 
+/**
+ * Checks if the user's question likely requires database analytics access.
+ */
+function shouldFetchAnalytics(question: string): boolean {
+  const analyticsKeywords = [
+    "link", "click", "analytic", "stat", "perform", "top", "total", 
+    "active", "have", "my", "dashboard", "summary", "count", "performing"
+  ];
+  const lowerQuestion = question.toLowerCase();
+  return analyticsKeywords.some(keyword => lowerQuestion.includes(keyword));
+}
+
+/**
+ * Formats user analytics data into a readable string for the LLM.
+ */
+async function getFormattedAnalytics(userId: string): Promise<string> {
+  try {
+    const [summary, topLinks] = await Promise.all([
+      analyticsService.getUserAnalytics(userId),
+      analyticsService.getTopLinks(userId, 5)
+    ]);
+
+    let context = `Stats Summary:
+- Total Links: ${summary.totalLinks}
+- Total Clicks (All time): ${summary.totalClicks}
+- Clicks in last 24h: ${summary.todaysClicks}
+
+Top 5 Performing Links:
+`;
+    
+    if (topLinks.length === 0) {
+      context += "No links found for this user.";
+    } else {
+      topLinks.forEach((link: any, i: number) => {
+        context += `${i + 1}. "${link.name}" | Code: ${link.shortCode} | Clicks: ${link.clicks} | Original URL: ${link.url}\n`;
+      });
+    }
+
+    return context;
+  } catch (error) {
+    logger.error(`Error fetching analytics for RAG: ${error}`);
+    return "Unable to fetch user analytics at this time.";
+  }
+}
+
 export async function ragChat(
-  question: string
+  question: string,
+  userId: string
 ): Promise<{ answer: string; sources: Array<{ content: string; metadata: Record<string, any> }> }> {
   logger.info(`RAG chat query: "${question}"`);
 
-  // 1. Retrieve relevant chunks
+  // 1. Prepare retrievers (Vector & Analytics)
   const store = await getVectorStore();
-  const retriever = store.asRetriever({
-    k: 4,
-  });
+  const retriever = store.asRetriever({ k: 4 });
 
-  const relevantDocs = await retriever.invoke(question);
+  // 2. Fetch both contexts in parallel
+  const fetchAnalytics = shouldFetchAnalytics(question);
+  
+  const [relevantDocs, analyticsContext] = await Promise.all([
+    retriever.invoke(question),
+    fetchAnalytics ? getFormattedAnalytics(userId) : Promise.resolve("Not requested/relevant for this query.")
+  ]);
 
-  if (relevantDocs.length === 0) {
+  if (relevantDocs.length === 0 && !fetchAnalytics) {
     return {
       answer:
-        "I couldn't find any relevant information in the API documentation. Please make sure the docs have been ingested, or try rephrasing your question.",
+        "I couldn't find any relevant information in the documentation and this doesn't seem to be an analytics request. Please make sure the docs are ingested or try rephrasing.",
       sources: [],
     };
   }
@@ -198,6 +256,9 @@ export async function ragChat(
         `[Chunk ${i + 1}] (Source: ${doc.metadata.source || "unknown"}):\n${doc.pageContent}`
     )
     .join("\n\n");
+  
+
+    
 
   // 3. Create the prompt chain
   const chatModel = new ChatGoogleGenerativeAI({
@@ -220,6 +281,7 @@ export async function ragChat(
   try {
     answer = await chain.invoke({
       context: contextText,
+      analyticsContext: analyticsContext,
       question: question,
     });
   } catch (error: any) {

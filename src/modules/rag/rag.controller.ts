@@ -21,7 +21,7 @@ export const chatController = asyncHandler(async (req: any, res: any) => {
     throw new ApiError(400, "Question must be under 1000 characters");
   }
 
-  const result = await ragChat(question.trim());
+  const result = await ragChat(question.trim(), req.user._id);
 
   res.status(200).json({
     success: true,
